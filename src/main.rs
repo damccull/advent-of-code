@@ -1,4 +1,4 @@
-use puzzle1_sonar_sweep::{count_depths, count_depths_windowed};
+use advent_of_code_2021::day1::{puzzle1::count_depths, puzzle2::count_depths_windowed};
 
 fn main() {
     println!("Depth Increases: {}", count_depths("input.txt"));

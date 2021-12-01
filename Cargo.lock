@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "puzzle1_sonar_sweep"
+name = "advent_of_code_2021"
 version = "0.1.0"
