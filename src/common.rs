@@ -1,3 +1,6 @@
+// This file contains code that is not part of the puzzle itself, but that supports it.
+// Example: code to load data from a file.
+
 use std::{
     fs::File,
     io::{self, BufRead},
