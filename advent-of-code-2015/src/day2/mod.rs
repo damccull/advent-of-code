@@ -27,6 +27,12 @@ impl Package {
         smallest_side.sort_unstable();
         smallest_side[0]
     }
+
+    pub fn sorted_lengths(&self) -> Vec<u32> {
+        let mut sorted = vec![self.length, self.width, self.height];
+        sorted.sort();
+        sorted
+    }
 }
 
 pub fn get_packages(filename: PathBuf) -> Vec<Package> {
