@@ -1,4 +1,4 @@
-use crate::common::extract_depths;
+use super::extract_depths;
 
 pub fn count_depths(filename: &str) -> i32 {
     // Get a vector of depts from the file

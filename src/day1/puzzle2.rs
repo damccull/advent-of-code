@@ -1,4 +1,4 @@
-use crate::common::extract_depths;
+use super::extract_depths;
 
 pub fn count_depths_windowed(filename: &str, window_size: usize) -> i32 {
     let depths = extract_depths(filename);
