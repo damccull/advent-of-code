@@ -1,7 +1,7 @@
 pub mod puzzle1;
 pub mod puzzle2;
 
-use crate::common::read_lines;
+use crate::read_lines;
 
 pub fn extract_depths(filename: &str) -> Vec<i32> {
     let mut depths = Vec::new();
