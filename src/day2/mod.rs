@@ -5,12 +5,14 @@ pub mod puzzle2;
 
 #[derive(Debug)]
 pub struct MovementResult {
+    pub aim: i32,
     pub distance: u32,
     pub depth: i32,
 }
 impl MovementResult {
     pub fn new() -> Self {
         Self {
+            aim: 0,
             distance: 0,
             depth: 0,
         }
