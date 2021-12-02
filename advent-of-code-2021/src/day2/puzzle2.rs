@@ -1,6 +1,8 @@
+use std::path::PathBuf;
+
 use super::{extract_movement, MovementInstruction, MovementResult};
 
-pub fn determine_depth_and_distance_with_aim(filename: &str) -> MovementResult {
+pub fn determine_depth_and_distance_with_aim(filename: PathBuf) -> MovementResult {
     let instructions = extract_movement(filename);
     instructions
         .iter()

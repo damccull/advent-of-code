@@ -1,6 +1,8 @@
+use std::path::PathBuf;
+
 use super::extract_depths;
 
-pub fn count_depths(filename: &str) -> i32 {
+pub fn count_depths(filename: PathBuf) -> i32 {
     // Get a vector of depts from the file
     let depths = extract_depths(filename);
 

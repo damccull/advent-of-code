@@ -1,6 +1,8 @@
+use std::path::PathBuf;
+
 use super::extract_depths;
 
-pub fn count_depths_windowed(filename: &str, window_size: usize) -> i32 {
+pub fn count_depths_windowed(filename: PathBuf, window_size: usize) -> i32 {
     let depths = extract_depths(filename);
 
     // Iterate over the depths and accumulate a count of depths that increase

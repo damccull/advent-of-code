@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::read_lines;
 
 pub mod puzzle1;
@@ -42,7 +44,7 @@ impl From<String> for MovementInstruction {
     }
 }
 
-pub fn extract_movement(filename: &str) -> Vec<MovementInstruction> {
+pub fn extract_movement(filename: PathBuf) -> Vec<MovementInstruction> {
     let mut result = Vec::new();
     if let Ok(lines) = read_lines(filename) {
         // Consume iterator, return an (Optional) String

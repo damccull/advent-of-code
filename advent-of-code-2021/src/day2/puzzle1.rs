@@ -1,6 +1,8 @@
+use std::path::PathBuf;
+
 use super::{extract_movement, MovementInstruction, MovementResult};
 
-pub fn determine_depth_and_distance(filename: &str) -> MovementResult {
+pub fn determine_depth_and_distance(filename: PathBuf) -> MovementResult {
     // Get a vector of `MovementInstruction`s.
     let instructions = extract_movement(filename);
 
