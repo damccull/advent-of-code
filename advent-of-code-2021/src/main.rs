@@ -1,7 +1,4 @@
-use std::{
-    arch::x86_64::_mm_broadcastb_epi8,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use advent_of_code_2021::{
     day1::{puzzle1::count_depths, puzzle2::count_depths_windowed},
