@@ -1,15 +1,2 @@
-[package]
-name = "advent_of_code_2021"
-version = "0.1.0"
-edition = "2021"
-
-[lib]
-path = "src/lib.rs"
-
-[[bin]]
-path = "src/main.rs"
-name = "advent_of_code_2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+[workspace]
+members = ["advent-of-code-2021"]
