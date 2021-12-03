@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use advent_of_code_2015::{
     day1::{puzzle1::what_floor, puzzle2::what_floor_enters_basement},
     day2::{puzzle1::get_wrapping_paper_sqft, puzzle2::get_ribbon_length},
-    day3::puzzle1::number_houses_received_present,
+    day3::{puzzle1::number_houses_received_present, puzzle2::number_houses_received_present_robo},
 };
 
 fn main() {
@@ -45,8 +45,8 @@ fn day3() {
         "D3P1: Santa has dropped at least one gift at {} houses.",
         number_houses_received_present(data_file("day3.txt"))
     );
-    // println!(
-    //     "D3P2:  {} .",
-    //     unknown_fn(data_file("day3.txt"))
-    // );
+    println!(
+        "D3P2: Santa and Robosanta have dropped at least one gift at {} houses.",
+        number_houses_received_present_robo(data_file("day3.txt"))
+    );
 }
