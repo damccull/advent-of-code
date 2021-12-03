@@ -31,9 +31,9 @@ impl DiagnosticReport {
         let mut result = Vec::new();
         for i in 0..self.binary[0].len() {
             let bit = match DiagnosticReport::most_common_bit(self.binary.clone(), i) {
-                MostCommonBit::One => true,
-                MostCommonBit::Zero => false,
-                MostCommonBit::Equal => true,
+                CommonBit::One => true,
+                CommonBit::Zero => false,
+                CommonBit::Equal => true,
             };
             result.push(bit);
         }
@@ -44,9 +44,9 @@ impl DiagnosticReport {
         let mut result = Vec::new();
         for i in 0..self.binary[0].len() {
             let bit = match DiagnosticReport::most_common_bit(self.binary.clone(), i) {
-                MostCommonBit::One => true,
-                MostCommonBit::Zero => false,
-                MostCommonBit::Equal => true,
+                CommonBit::One => true,
+                CommonBit::Zero => false,
+                CommonBit::Equal => true,
             };
             result.push(!bit);
         }
@@ -58,13 +58,13 @@ impl DiagnosticReport {
         let mut working_set = self.binary.clone();
         for i in 0..self.binary[0].len() {
             let common_bit = match DiagnosticReport::most_common_bit(working_set.clone(), i) {
-                MostCommonBit::One => true,
-                MostCommonBit::Zero => false,
-                MostCommonBit::Equal => true,
+                CommonBit::One => true,
+                CommonBit::Zero => false,
+                CommonBit::Equal => true,
             };
             working_set = working_set
                 .into_iter()
-                .filter(|x| x[i].eq(&common_bit))
+                .filter(|x| x[i] == common_bit)
                 .collect();
             if working_set.len() == 1 {
                 break;
@@ -76,14 +76,14 @@ impl DiagnosticReport {
         // This method assumes all the codes are the same length
         let mut working_set = self.binary.clone();
         for i in 0..self.binary[0].len() {
-            let common_bit = match DiagnosticReport::most_common_bit(working_set.clone(), i) {
-                MostCommonBit::One => true,
-                MostCommonBit::Zero => false,
-                MostCommonBit::Equal => false,
+            let common_bit = match DiagnosticReport::least_common_bit(working_set.clone(), i) {
+                CommonBit::One => true,
+                CommonBit::Zero => false,
+                CommonBit::Equal => false,
             };
             working_set = working_set
                 .into_iter()
-                .filter(|x| x[i].eq(&common_bit))
+                .filter(|x| x[i] == common_bit)
                 .collect();
             if working_set.len() == 1 {
                 break;
@@ -111,21 +111,33 @@ impl DiagnosticReport {
             .iter()
             .fold(0, |result, &bit| (result << 1) ^ bit as u32)
     }
-    pub fn most_common_bit(set: Vec<Vec<bool>>, bit_position: usize) -> MostCommonBit {
+    pub fn most_common_bit(set: Vec<Vec<bool>>, bit_position: usize) -> CommonBit {
         let ones_count = set.iter().fold(
             0,
             |ones, code| if code[bit_position] { ones + 1 } else { ones },
         );
-        let len = set.len() / 2;
+        let len = (set.len() + 1) / 2;
         match ones_count.cmp(&len) {
-            std::cmp::Ordering::Less => MostCommonBit::Zero,
-            std::cmp::Ordering::Equal => MostCommonBit::One,
-            std::cmp::Ordering::Greater => MostCommonBit::Equal,
+            std::cmp::Ordering::Less => CommonBit::Zero,
+            std::cmp::Ordering::Equal => CommonBit::Equal,
+            std::cmp::Ordering::Greater => CommonBit::One,
+        }
+    }
+    pub fn least_common_bit(set: Vec<Vec<bool>>, bit_position: usize) -> CommonBit {
+        let ones_count = set.iter().fold(
+            0,
+            |ones, code| if code[bit_position] { ones + 1 } else { ones },
+        );
+        let len = (set.len() + 1) / 2;
+        match ones_count.cmp(&len) {
+            std::cmp::Ordering::Less => CommonBit::One,
+            std::cmp::Ordering::Equal => CommonBit::Equal,
+            std::cmp::Ordering::Greater => CommonBit::Zero,
         }
     }
 }
 
-pub enum MostCommonBit {
+pub enum CommonBit {
     One,
     Zero,
     Equal,
