@@ -8,7 +8,7 @@ pub mod day3;
 use std::{
     fs::File,
     io::{self, BufRead},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
@@ -17,4 +17,10 @@ where
 {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
+}
+
+pub fn data_file(filename: &str) -> PathBuf {
+    let basepathstr = format!("{}/input", env!("CARGO_MANIFEST_DIR"));
+    let base = Path::new(&basepathstr);
+    base.join(filename)
 }
