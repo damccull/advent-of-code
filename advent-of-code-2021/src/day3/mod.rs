@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{num::NonZeroI128, path::PathBuf};
 
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -30,7 +30,12 @@ impl DiagnosticReport {
         // This method assumes all the codes are the same length
         let mut result = Vec::new();
         for i in 0..self.binary[0].len() {
-            result.push(self.most_common_bit(i, true));
+            let bit = match DiagnosticReport::most_common_bit(self.binary.clone(), i) {
+                MostCommonBit::One => true,
+                MostCommonBit::Zero => false,
+                MostCommonBit::Equal => true,
+            };
+            result.push(bit);
         }
         result
     }
@@ -38,7 +43,12 @@ impl DiagnosticReport {
         // This method assumes all the codes are the same length
         let mut result = Vec::new();
         for i in 0..self.binary[0].len() {
-            result.push(!self.most_common_bit(i, true));
+            let bit = match DiagnosticReport::most_common_bit(self.binary.clone(), i) {
+                MostCommonBit::One => true,
+                MostCommonBit::Zero => false,
+                MostCommonBit::Equal => true,
+            };
+            result.push(!bit);
         }
         result
     }
@@ -47,7 +57,11 @@ impl DiagnosticReport {
         // This method assumes all the codes are the same length
         let mut working_set = self.binary.clone();
         for i in 0..self.binary[0].len() {
-            let common_bit = self.most_common_bit(i, true);
+            let common_bit = match DiagnosticReport::most_common_bit(working_set.clone(), i) {
+                MostCommonBit::One => true,
+                MostCommonBit::Zero => false,
+                MostCommonBit::Equal => true,
+            };
             working_set = working_set
                 .into_iter()
                 .filter(|x| x[i].eq(&common_bit))
@@ -62,10 +76,14 @@ impl DiagnosticReport {
         // This method assumes all the codes are the same length
         let mut working_set = self.binary.clone();
         for i in 0..self.binary[0].len() {
-            let common_bit = self.most_common_bit(i, false);
+            let common_bit = match DiagnosticReport::most_common_bit(working_set.clone(), i) {
+                MostCommonBit::One => true,
+                MostCommonBit::Zero => false,
+                MostCommonBit::Equal => false,
+            };
             working_set = working_set
                 .into_iter()
-                .filter(|x| x[i].ne(&common_bit))
+                .filter(|x| x[i].eq(&common_bit))
                 .collect();
             if working_set.len() == 1 {
                 break;
@@ -93,18 +111,24 @@ impl DiagnosticReport {
             .iter()
             .fold(0, |result, &bit| (result << 1) ^ bit as u32)
     }
-    pub fn most_common_bit(&self, bit_position: usize, round_up: bool) -> bool {
-        let ones_count =
-            self.binary.iter().fold(
-                0,
-                |ones, code| if code[bit_position] { ones + 1 } else { ones },
-            );
-        if round_up {
-            ones_count >= self.binary.len() / 2
-        } else {
-            ones_count > self.binary.len() / 2
+    pub fn most_common_bit(set: Vec<Vec<bool>>, bit_position: usize) -> MostCommonBit {
+        let ones_count = set.iter().fold(
+            0,
+            |ones, code| if code[bit_position] { ones + 1 } else { ones },
+        );
+        let len = set.len() / 2;
+        match ones_count.cmp(&len) {
+            std::cmp::Ordering::Less => MostCommonBit::Zero,
+            std::cmp::Ordering::Equal => MostCommonBit::One,
+            std::cmp::Ordering::Greater => MostCommonBit::Equal,
         }
     }
+}
+
+pub enum MostCommonBit {
+    One,
+    Zero,
+    Equal,
 }
 
 pub fn get_diagnostic_report(filename: PathBuf) -> DiagnosticReport {
@@ -225,5 +249,49 @@ mod test {
         };
         let result = 9_u32;
         assert_eq!(test_data.get_epsilon_rate_decimal(), result);
+    }
+
+    #[test]
+    fn get_oxygen_generator_rating_binary_works() {
+        let test_data = DiagnosticReport {
+            binary: vec![
+                vec![false, false, true, false, false],
+                vec![true, true, true, true, false],
+                vec![true, false, true, true, false],
+                vec![true, false, true, true, true],
+                vec![true, false, true, false, true],
+                vec![false, true, true, true, true],
+                vec![false, false, true, true, true],
+                vec![true, true, true, false, false],
+                vec![true, false, false, false, false],
+                vec![true, true, false, false, true],
+                vec![false, false, false, true, false],
+                vec![false, true, false, true, false],
+            ],
+        };
+        let result = vec![true, false, true, true, true];
+        assert_eq!(test_data.get_oxygen_generator_rating_binary(), result);
+    }
+
+    #[test]
+    fn get_co2_scrubber_rating_binary_works() {
+        let test_data = DiagnosticReport {
+            binary: vec![
+                vec![false, false, true, false, false],
+                vec![true, true, true, true, false],
+                vec![true, false, true, true, false],
+                vec![true, false, true, true, true],
+                vec![true, false, true, false, true],
+                vec![false, true, true, true, true],
+                vec![false, false, true, true, true],
+                vec![true, true, true, false, false],
+                vec![true, false, false, false, false],
+                vec![true, true, false, false, true],
+                vec![false, false, false, true, false],
+                vec![false, true, false, true, false],
+            ],
+        };
+        let result = vec![false, true, false, true, false];
+        assert_eq!(test_data.get_co2_scrubber_rating_binary(), result);
     }
 }
