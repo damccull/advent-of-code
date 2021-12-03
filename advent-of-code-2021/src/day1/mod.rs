@@ -4,7 +4,7 @@ pub mod puzzle2;
 use std::path::PathBuf;
 
 use crate::{
-    config_file,
+    data_file,
     day1::{puzzle1::count_depths, puzzle2::count_depths_windowed},
     read_lines,
 };
@@ -12,11 +12,11 @@ use crate::{
 pub fn run() {
     println!(
         "D1P1: Depth Increases: {}",
-        count_depths(config_file("day1.txt"))
+        count_depths(data_file("day1.txt"))
     );
     println!(
         "D1P2: Depth Increases (3-measure window): {}",
-        count_depths_windowed(config_file("day1.txt"), 3)
+        count_depths_windowed(data_file("day1.txt"), 3)
     );
 }
 

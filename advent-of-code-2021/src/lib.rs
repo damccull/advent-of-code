@@ -18,7 +18,7 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-pub fn config_file(filename: &str) -> PathBuf {
+pub fn data_file(filename: &str) -> PathBuf {
     let basepathstr = format!("{}/input", env!("CARGO_MANIFEST_DIR"));
     let base = Path::new(&basepathstr);
     base.join(filename)
