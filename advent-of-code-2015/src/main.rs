@@ -3,11 +3,13 @@ use std::path::{Path, PathBuf};
 use advent_of_code_2015::{
     day1::{puzzle1::what_floor, puzzle2::what_floor_enters_basement},
     day2::{puzzle1::get_wrapping_paper_sqft, puzzle2::get_ribbon_length},
+    day3::puzzle1::number_houses_received_present,
 };
 
 fn main() {
     day1();
     day2();
+    day3();
 }
 
 fn data_file(filename: &str) -> PathBuf {
@@ -36,4 +38,15 @@ fn day2() {
         "D2P2: The elves need to order {} feet of ribbon.",
         get_ribbon_length(data_file("day2.txt"))
     );
+}
+
+fn day3() {
+    println!(
+        "D3P1: Santa has dropped at least one gift at {} houses.",
+        number_houses_received_present(data_file("day3.txt"))
+    );
+    // println!(
+    //     "D3P2:  {} .",
+    //     unknown_fn(data_file("day3.txt"))
+    // );
 }
