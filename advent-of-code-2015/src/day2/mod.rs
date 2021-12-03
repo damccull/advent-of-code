@@ -30,7 +30,7 @@ impl Package {
 
     pub fn sorted_lengths(&self) -> Vec<u32> {
         let mut sorted = vec![self.length, self.width, self.height];
-        sorted.sort();
+        sorted.sort_unstable();
         sorted
     }
 }
