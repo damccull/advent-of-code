@@ -27,6 +27,10 @@ impl FromStr for SantasListString {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        println!("Inside from_str");
+        let x = contains_separated_repeated_letter(s);
+        let y = contains_repeated_pair_twice(s);
+        dbg!(x, y);
         if contains_separated_repeated_letter(s) && contains_repeated_pair_twice(s) {
             return Ok(SantasListString::Nice(s.to_string()));
         }
@@ -34,7 +38,7 @@ impl FromStr for SantasListString {
     }
 }
 
-fn contains_separated_repeated_letter(s: &str) -> bool {
+fn contains_repeated_pair_twice(s: &str) -> bool {
     let strvec = UnicodeSegmentation::graphemes(s, true).collect::<Vec<&str>>();
     let mut num_matches = 0;
     let mut last_matched_index = 0;
@@ -54,11 +58,12 @@ fn contains_separated_repeated_letter(s: &str) -> bool {
     }
     num_matches >= 2
 }
-fn contains_repeated_pair_twice(s: &str) -> bool {
+fn contains_separated_repeated_letter(s: &str) -> bool {
     let strvec = UnicodeSegmentation::graphemes(s, true).collect::<Vec<&str>>();
     strvec.windows(3).fold(false, |acc, c| {
         if !acc {
-            c[0].eq(c[2]) && c[0].ne(c[1])
+            let r = c[0].eq(c[2]);
+            r
         } else {
             true
         }
@@ -124,7 +129,7 @@ mod test {
             "`uurcxstgmygtbstg` is broken"
         );
         assert!(
-            !contains_separated_repeated_letter("ieodomkazucvgmuy"),
+            contains_separated_repeated_letter("ieodomkazucvgmuy"),
             "`ieodomkazucvgmuy` is broken"
         );
     }
