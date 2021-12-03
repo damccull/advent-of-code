@@ -27,10 +27,6 @@ impl FromStr for SantasListString {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        println!("Inside from_str");
-        let x = contains_separated_repeated_letter(s);
-        let y = contains_repeated_pair_twice(s);
-        dbg!(x, y);
         if contains_separated_repeated_letter(s) && contains_repeated_pair_twice(s) {
             return Ok(SantasListString::Nice(s.to_string()));
         }
@@ -75,7 +71,7 @@ mod test {
     use std::str::FromStr;
 
     use super::{contains_repeated_pair_twice, contains_separated_repeated_letter};
-    use crate::day5::puzzle1::SantasListString;
+    use crate::day5::puzzle2::SantasListString;
 
     #[test]
     fn from_str_returns_nice_for_valid_nice_string() {
