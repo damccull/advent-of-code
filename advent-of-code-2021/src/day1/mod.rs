@@ -3,7 +3,22 @@ pub mod puzzle2;
 
 use std::path::PathBuf;
 
-use crate::read_lines;
+use crate::{
+    config_file,
+    day1::{puzzle1::count_depths, puzzle2::count_depths_windowed},
+    read_lines,
+};
+
+pub fn run() {
+    println!(
+        "D1P1: Depth Increases: {}",
+        count_depths(config_file("day1.txt"))
+    );
+    println!(
+        "D1P2: Depth Increases (3-measure window): {}",
+        count_depths_windowed(config_file("day1.txt"), 3)
+    );
+}
 
 pub fn extract_depths(filename: PathBuf) -> Vec<i32> {
     let mut depths = Vec::new();
