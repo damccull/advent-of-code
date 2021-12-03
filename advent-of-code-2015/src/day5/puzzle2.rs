@@ -112,38 +112,29 @@ mod test {
 
     #[test]
     fn contains_separated_repeated_letter_works() {
-        assert!(
-            contains_separated_repeated_letter("qjhvhtzxzqqjkmpb"),
-            "`qjhvhtzxzqqjkmpb` is broken"
-        );
-        assert!(
-            contains_separated_repeated_letter("xxyxx"),
-            "`xxyxx` is broken"
-        );
-        assert!(
-            !contains_separated_repeated_letter("uurcxstgmygtbstg"),
-            "`uurcxstgmygtbstg` is broken"
-        );
-        assert!(
-            contains_separated_repeated_letter("ieodomkazucvgmuy"),
-            "`ieodomkazucvgmuy` is broken"
-        );
+        let nice_words = vec!["qjhvhtzxzqqjkmpb", "xyxy", "xxyxx"];
+        let naughty_words = vec!["uurcxstgmygtbstg", "xxzi", "dsadsadsadsa", "aaa"];
+
+        for w in nice_words {
+            assert!(contains_separated_repeated_letter(w), "{} is broken", w);
+        }
+
+        for w in naughty_words {
+            assert!(!contains_separated_repeated_letter(w), "{} is broken", w);
+        }
     }
 
     #[test]
     fn contains_repeated_pair_twice_works() {
-        assert!(
-            contains_repeated_pair_twice("qjhvhtzxzqqjkmpb"),
-            "`qjhvhtzxzqqjkmpb` is broken"
-        );
-        assert!(contains_repeated_pair_twice("xxyxx"), "`xxyxx` is broken");
-        assert!(
-            !contains_repeated_pair_twice("uurcxstgmygtbstg"),
-            "`uurcxstgmygtbstg` is broken"
-        );
-        assert!(
-            !contains_repeated_pair_twice("ieodomkazucvgmuy"),
-            "`ieodomkazucvgmuy` is broken"
-        );
+        let nice_words = vec!["qjhvhtzxzqqjkmpb", "xyxy", "xxyxx"];
+        let naughty_words = vec!["ieodomkazucvgmuy", "xxzi", "abcdefghi"];
+
+        for w in nice_words {
+            assert!(contains_repeated_pair_twice(w), "{} is broken", w);
+        }
+
+        for w in naughty_words {
+            assert!(!contains_repeated_pair_twice(w), "{} is broken", w);
+        }
     }
 }
