@@ -10,7 +10,10 @@ pub fn find_nice_strings_new_rules(filename: PathBuf) -> u32 {
         for line in lines.flatten() {
             let d = SantasListStringNewRules::from_str(&line).expect("Could not parse string");
             match d {
-                SantasListStringNewRules::Nice(x) => {dbg!(x);n += 1},
+                SantasListStringNewRules::Nice(x) => {
+                    dbg!(x);
+                    n += 1
+                }
                 SantasListStringNewRules::Naughty(_) => {}
             }
         }
@@ -40,7 +43,7 @@ fn contains_repeated_pair_twice(s: &str) -> bool {
     let pairs: Vec<&[&str]> = strvec.windows(2).collect();
     let mut counters = HashMap::new();
     for (i, x) in pairs.iter().enumerate() {
-        if x[0] == x[1] && i < pairs.len() - 1 && x[1] == pairs[i + 1][0] {
+        if x[0] == x[1] && i < pairs.len() - 1 && x[1] == pairs[i + 1][1] {
             continue;
         }
         let c = counters.entry(x).or_insert(0);
@@ -71,18 +74,15 @@ mod test {
 
     #[test]
     fn from_str_returns_nice_for_valid_nice_string() {
-        assert_eq!(
-            SantasListStringNewRules::from_str("qjhvhtzxzqqjkmpb"),
-            Ok(SantasListStringNewRules::Nice(
-                "qjhvhtzxzqqjkmpb".to_string()
-            )),
-            "`qjhvhtzxzqqjkmpb` is broken"
-        );
-        assert_eq!(
-            SantasListStringNewRules::from_str("xxyxx"),
-            Ok(SantasListStringNewRules::Nice("xxyxx".to_string())),
-            "`xxyxx` is broken"
-        );
+        let test_data = vec!["qjhvhtzxzqqjkmpb", "xxyxx", "fdhsasfdhuias", "osoi8ysys"];
+        for d in test_data {
+            assert_eq!(
+                SantasListStringNewRules::from_str(d),
+                Ok(SantasListStringNewRules::Nice(d.to_string())),
+                "Failed case: {}",
+                d
+            )
+        }
     }
 
     #[test]
@@ -96,6 +96,7 @@ mod test {
                 "ieodomkazucvgmuy",
                 "Repeating letter with one in between but no pair appearing twice",
             ),
+            ("ofewoaaayhw", "Only one pair that isn't overlapped."),
         ];
 
         for (d, e) in test_data {
@@ -110,21 +111,35 @@ mod test {
 
     #[test]
     fn contains_separated_repeated_letter_works() {
-        let nice_words = vec!["qjhvhtzxzqqjkmpb", "xyxy", "xxyxx", "aaa"];
+        let nice_words = vec![
+            "qjhvhtzxzqqjkmpb",
+            "xyxy",
+            "xxyxx",
+            "aaa",
+            "ieodomkazucvgmuy",
+        ];
         let naughty_words = vec!["uurcxstgmygtbstg", "xxzi", "dsadsadsadsa"];
 
         for w in nice_words {
-            assert!(contains_separated_repeated_letter(w), "{} is broken", w);
+            assert!(
+                contains_separated_repeated_letter(w),
+                "NICE: {} is broken",
+                w
+            );
         }
 
         for w in naughty_words {
-            assert!(!contains_separated_repeated_letter(w), "{} is broken", w);
+            assert!(
+                !contains_separated_repeated_letter(w),
+                "NAUGHTY: {} is broken",
+                w
+            );
         }
     }
 
     #[test]
     fn contains_repeated_pair_twice_works() {
-        let nice_words = vec!["qjhvhtzxzqqjkmpb", "xyxy", "xxyxx"];
+        let nice_words = vec!["qjhvhtzxzqqjkmpb", "xyxy", "xxyxx", "uurcxstgmygtbstg"];
         let naughty_words = vec!["aaa", "ieodomkazucvgmuy", "xxzi", "abcdefghi"];
 
         for w in nice_words {
