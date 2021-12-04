@@ -10,7 +10,7 @@ pub fn find_nice_strings_new_rules(filename: PathBuf) -> u32 {
         for line in lines.flatten() {
             let d = SantasListStringNewRules::from_str(&line).expect("Could not parse string");
             match d {
-                SantasListStringNewRules::Nice(_) => n += 1,
+                SantasListStringNewRules::Nice(x) => {dbg!(x);n += 1},
                 SantasListStringNewRules::Naughty(_) => {}
             }
         }
@@ -37,10 +37,13 @@ impl FromStr for SantasListStringNewRules {
 fn contains_repeated_pair_twice(s: &str) -> bool {
     let strvec = UnicodeSegmentation::graphemes(s, true).collect::<Vec<&str>>();
 
-    let windows: Vec<&[&str]> = strvec.windows(2).collect();
+    let pairs: Vec<&[&str]> = strvec.windows(2).collect();
     let mut counters = HashMap::new();
-    for x in windows {
-        let c = counters.entry(x).or_insert(1);
+    for (i, x) in pairs.iter().enumerate() {
+        if x[0] == x[1] && i < pairs.len() - 1 && x[1] == pairs[i + 1][0] {
+            continue;
+        }
+        let c = counters.entry(x).or_insert(0);
         *c += 1;
     }
     let mut fuse = false;
@@ -50,36 +53,13 @@ fn contains_repeated_pair_twice(s: &str) -> bool {
         }
     }
     fuse
-
-    // let strvec = UnicodeSegmentation::graphemes(s, true).collect::<Vec<&str>>();
-    // let mut num_matches = 0;
-    // let mut last_matched_index = 0;
-    // for (index, &letter) in strvec.iter().enumerate() {
-    //     if index < strvec.len() - 1 && index + 1 > last_matched_index {
-    //         let current_letter = letter;
-    //         let next_letter = strvec[index + 1];
-    //         if let Some(pos_current_letter) =
-    //             strvec.iter().skip(index).position(|&x| x == current_letter)
-    //         {
-    //             if strvec[pos_current_letter + 1].eq(next_letter) {
-    //                 num_matches += 1;
-    //                 last_matched_index = pos_current_letter;
-    //             }
-    //         }
-    //     }
-    // }
-    // num_matches >= 2
 }
+
 fn contains_separated_repeated_letter(s: &str) -> bool {
     let strvec = UnicodeSegmentation::graphemes(s, true).collect::<Vec<&str>>();
-    strvec.windows(3).fold(false, |acc, c| {
-        if !acc {
-            let r = c[0].eq(c[2]);
-            r
-        } else {
-            true
-        }
-    })
+    strvec
+        .windows(3)
+        .fold(false, |acc, c| if !acc { c[0].eq(c[2]) } else { true })
 }
 
 #[cfg(test)]
@@ -145,14 +125,14 @@ mod test {
     #[test]
     fn contains_repeated_pair_twice_works() {
         let nice_words = vec!["qjhvhtzxzqqjkmpb", "xyxy", "xxyxx"];
-        let naughty_words = vec!["ieodomkazucvgmuy", "xxzi", "abcdefghi", "aaa"];
+        let naughty_words = vec!["aaa", "ieodomkazucvgmuy", "xxzi", "abcdefghi"];
 
         for w in nice_words {
-            assert!(contains_repeated_pair_twice(w), "{} is broken", w);
+            assert!(contains_repeated_pair_twice(w), "NICE: {} is broken", w);
         }
 
         for w in naughty_words {
-            assert!(!contains_repeated_pair_twice(w), "{} is broken", w);
+            assert!(!contains_repeated_pair_twice(w), "NAUGHTY: {} is broken", w);
         }
     }
 }
