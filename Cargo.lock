@@ -14,6 +14,7 @@ dependencies = [
 name = "advent_of_code_2021"
 version = "0.1.0"
 dependencies = [
+ "md5",
  "unicode-segmentation",
 ]
 
