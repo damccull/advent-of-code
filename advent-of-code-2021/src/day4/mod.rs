@@ -1,11 +1,11 @@
+pub mod puzzle1;
+pub mod puzzle2;
+
 use std::path::PathBuf;
 
 use unicode_segmentation::UnicodeSegmentation;
 
-use crate::{data_file, day4::puzzle2::find_winning_board_id, read_lines};
-
-pub mod puzzle1;
-pub mod puzzle2;
+use crate::{data_file, day4::puzzle1::find_winning_board_id, read_lines};
 
 pub fn run() {
     let g = build_game(data_file("day4.txt"));
