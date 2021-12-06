@@ -1,9 +1,6 @@
 use std::path::PathBuf;
 
-use crate::{data_file, day6::puzzle1::count_fish_in_pond, read_lines};
-
-pub mod puzzle1;
-pub mod puzzle2;
+use crate::{data_file, read_lines};
 
 pub fn run() {
     let pond = get_data(data_file("day6.txt"));
@@ -30,4 +27,20 @@ pub fn get_data(filename: PathBuf) -> Vec<Fish> {
         }
     }
     x
+}
+
+pub fn count_fish_in_pond(pond: Vec<Fish>) -> usize {
+    let mut pond = pond;
+    //dbg!(&pond);
+    for _day in 0..80 {
+        let fishies = &pond.clone();
+        for (i, fish) in fishies.iter().enumerate() {
+            if fish.age == 0 {
+                pond[i].age = 7;
+                pond.push(Fish { age: 8 });
+            }
+            pond[i].age -= 1;
+        }
+    }
+    pond.len()
 }
