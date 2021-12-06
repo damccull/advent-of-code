@@ -1,5 +1,6 @@
 use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
+use fancy_regex::Regex;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::read_lines;
@@ -8,13 +9,13 @@ pub fn find_nice_strings_new_rules(filename: PathBuf) -> u32 {
     let mut n: u32 = 0;
     if let Ok(lines) = read_lines(filename) {
         for line in lines.flatten() {
-            let d = SantasListStringNewRules::from_str(&line).expect("Could not parse string");
+            let d = SantasListStringNewRules::from_str(&line);
             match d {
-                SantasListStringNewRules::Nice(x) => {
+                Ok(SantasListStringNewRules::Nice(x)) => {
                     dbg!(x);
                     n += 1
                 }
-                SantasListStringNewRules::Naughty(_) => {}
+                Ok(SantasListStringNewRules::Naughty(_)) | Err(_) => {}
             }
         }
     }
@@ -30,39 +31,22 @@ impl FromStr for SantasListStringNewRules {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if contains_separated_repeated_letter(s) && contains_repeated_pair_twice(s) {
-            return Ok(SantasListStringNewRules::Nice(s.to_string()));
+        if contains_repeated_pair_twice(s) && contains_separated_repeated_letter(s) {
+            Ok(SantasListStringNewRules::Nice(s.to_string()))
+        } else {
+            Ok(SantasListStringNewRules::Naughty(s.to_string()))
         }
-        Ok(SantasListStringNewRules::Naughty(s.to_string()))
     }
 }
 
 fn contains_repeated_pair_twice(s: &str) -> bool {
-    let strvec = UnicodeSegmentation::graphemes(s, true).collect::<Vec<&str>>();
-
-    let pairs: Vec<&[&str]> = strvec.windows(2).collect();
-    let mut counters = HashMap::new();
-    for (i, x) in pairs.iter().enumerate() {
-        if x[0] == x[1] && i < pairs.len() - 1 && x[1] == pairs[i + 1][1] {
-            continue;
-        }
-        let c = counters.entry(x).or_insert(0);
-        *c += 1;
-    }
-    let mut fuse = false;
-    for (_key, val) in counters.iter() {
-        if val >= &2 {
-            fuse = true;
-        }
-    }
-    fuse
+    let con1 = Regex::new(r"^.*(..).*\1.*$").unwrap();
+    con1.is_match(s).unwrap()
 }
 
 fn contains_separated_repeated_letter(s: &str) -> bool {
-    let strvec = UnicodeSegmentation::graphemes(s, true).collect::<Vec<&str>>();
-    strvec
-        .windows(3)
-        .fold(false, |acc, c| if !acc { c[0].eq(c[2]) } else { true })
+    let con2 = Regex::new(r"^.*(.).\1.*$").unwrap();
+    con2.is_match(s).unwrap()
 }
 
 #[cfg(test)]
