@@ -10,10 +10,7 @@ pub fn find_nice_strings_new_rules(filename: PathBuf) -> u32 {
         for line in lines.flatten() {
             let d = SantasListStringNewRules::from_str(&line);
             match d {
-                Ok(SantasListStringNewRules::Nice(x)) => {
-                    dbg!(x);
-                    n += 1
-                }
+                Ok(SantasListStringNewRules::Nice(_)) => n += 1,
                 Ok(SantasListStringNewRules::Naughty(_)) | Err(_) => {}
             }
         }
