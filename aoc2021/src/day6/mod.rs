@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, VecDeque},
-    path::PathBuf,
-};
+use std::{collections::VecDeque, path::PathBuf};
 
 use crate::{data_file, read_lines};
 
