@@ -1,11 +1,22 @@
-use std::path::PathBuf;
+use std::{
+    collections::{HashMap, VecDeque},
+    path::PathBuf,
+};
 
 use crate::{data_file, read_lines};
 
 pub fn run() {
     let pond = get_data(data_file("day6.txt"));
+    //let pond = vec![3, 4, 3, 1, 2];
+    println!(
+        "D6P1: Fish in the pond after 80 days: {}",
+        count_fish_in_pond(&pond, 80)
+    );
 
-    println!("D6P1: Fish in the pond: {}", count_fish_in_pond(pond));
+    println!(
+        "D6P2: Fish in the pond after 256 days: {}",
+        count_fish_in_pond(&pond, 256),
+    );
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -13,34 +24,36 @@ pub struct Fish {
     age: u32,
 }
 
-pub fn get_data(filename: PathBuf) -> Vec<Fish> {
-    let mut x = Vec::new();
+pub fn get_data(filename: PathBuf) -> Vec<usize> {
+    let mut x: Vec<usize> = Vec::new();
     if let Ok(lines) = read_lines(filename) {
         for line in lines.flatten() {
             let mut fishies = line
                 .split(',')
-                .map(|f| Fish {
-                    age: f.parse().unwrap(),
-                })
-                .collect::<Vec<_>>();
+                .map(|f| f.parse().unwrap())
+                .collect::<Vec<usize>>();
             x.append(&mut fishies);
         }
     }
     x
 }
 
-pub fn count_fish_in_pond(pond: Vec<Fish>) -> usize {
-    let mut pond = pond;
-    //dbg!(&pond);
-    for _day in 0..80 {
-        let fishies = &pond.clone();
-        for (i, fish) in fishies.iter().enumerate() {
-            if fish.age == 0 {
-                pond[i].age = 7;
-                pond.push(Fish { age: 8 });
-            }
-            pond[i].age -= 1;
-        }
+pub fn count_fish_in_pond(fish: &[usize], days: usize) -> usize {
+    let fish = Vec::from(fish);
+    let mut pond = vec![0_usize; 9];
+    //build the initial state
+    for f in fish {
+        pond[f] += 1;
     }
-    pond.len()
+
+    let mut pond = VecDeque::from(pond);
+    for _day in 0..days {
+        let net = pond[0];
+        let hatchery = pond[0];
+        pond[0] = 0;
+        pond.rotate_left(1);
+        pond[6] += net;
+        pond[8] = hatchery;
+    }
+    pond.make_contiguous().iter().sum::<usize>()
 }
