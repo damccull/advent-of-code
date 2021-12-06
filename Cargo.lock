@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "advent_of_code_2015"
+name = "aoc2015"
 version = "0.1.0"
 dependencies = [
  "md5",
@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "advent_of_code_2021"
+name = "aoc2021"
 version = "0.1.0"
 dependencies = [
  "md5",
