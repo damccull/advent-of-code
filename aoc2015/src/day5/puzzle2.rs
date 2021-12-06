@@ -1,7 +1,6 @@
-use std::{collections::HashMap, path::PathBuf, str::FromStr};
+use std::{path::PathBuf, str::FromStr};
 
 use fancy_regex::Regex;
-use unicode_segmentation::UnicodeSegmentation;
 
 use crate::read_lines;
 
