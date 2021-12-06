@@ -36,13 +36,11 @@ impl FromStr for SantasListStringNewRules {
 }
 
 fn contains_repeated_pair_twice(s: &str) -> bool {
-    let con1 = Regex::new(r"^.*(..).*\1.*$").unwrap();
-    con1.is_match(s).unwrap()
+    Regex::new(r"^.*(..).*\1.*$").unwrap().is_match(s).unwrap()
 }
 
 fn contains_separated_repeated_letter(s: &str) -> bool {
-    let con2 = Regex::new(r"^.*(.).\1.*$").unwrap();
-    con2.is_match(s).unwrap()
+    Regex::new(r"^.*(.).\1.*$").unwrap().is_match(s).unwrap()
 }
 
 #[cfg(test)]
