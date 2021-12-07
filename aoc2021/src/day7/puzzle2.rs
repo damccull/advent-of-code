@@ -18,7 +18,7 @@ pub fn find_minimum_fuel_increasing_rate(distances: &[usize]) -> usize {
 
     counters.iter().fold(
         0_usize,
-        |acc, (&d, &f)| {
+        |acc, (_, &f)| {
             if acc == 0 || f < acc {
                 f
             } else {
