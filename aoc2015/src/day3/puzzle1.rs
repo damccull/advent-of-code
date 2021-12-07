@@ -1,6 +1,8 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use super::{get_directions, Coordinate};
+use aoclib::Point;
+
+use super::get_directions;
 
 pub fn number_houses_received_present(filename: PathBuf) -> u32 {
     // Get the data
@@ -9,14 +11,14 @@ pub fn number_houses_received_present(filename: PathBuf) -> u32 {
     let mut houses = HashMap::new();
     // Set the current coordinate to origin and insert it immediately because
     // instructions say that the origin is the first delivery
-    let mut current_coord = Coordinate(0, 0);
+    let mut current_coord = Point { x: 0, y: 0 };
     houses.insert(current_coord.clone(), 1);
 
     // Set up some coordinate deltas for each direction
-    let move_north = Coordinate(0, 1);
-    let move_south = Coordinate(0, -1);
-    let move_east = Coordinate(1, 0);
-    let move_west = Coordinate(-1, 0);
+    let move_north = Point { x: 0, y: 1 };
+    let move_south = Point { x: 0, y: -1 };
+    let move_east = Point { x: 1, y: 0 };
+    let move_west = Point { x: -1, y: 0 };
 
     for d in directions {
         // Create a new coordinate to use for the hashmap

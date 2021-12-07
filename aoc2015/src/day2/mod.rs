@@ -1,9 +1,10 @@
 use std::path::PathBuf;
 
+use aoclib::read_lines;
+
 use crate::{
     data_file,
     day2::{puzzle1::get_wrapping_paper_sqft, puzzle2::get_ribbon_length},
-    read_lines,
 };
 
 pub mod puzzle1;

@@ -1,8 +1,8 @@
-use std::{path::PathBuf, str::FromStr};
+use std::path::PathBuf;
 
-use crate::{
-    data_file, day5::puzzle2::number_of_overlapping_line_points_with_diagonals, read_lines,
-};
+use aoclib::{read_lines, Point};
+
+use crate::{data_file, day5::puzzle2::number_of_overlapping_line_points_with_diagonals};
 
 use self::puzzle1::number_of_overlapping_line_points;
 
@@ -27,34 +27,15 @@ pub fn run() {
     }
 }
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Coordinate(i32, i32);
-impl FromStr for Coordinate {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let c = s.split(',').collect::<Vec<_>>();
-        let x: i32 = match c[0].parse() {
-            Ok(x) => x,
-            Err(e) => return Err(format!("Error parsing X coordinate: {}", e)),
-        };
-        let y: i32 = match c[1].parse() {
-            Ok(y) => y,
-            Err(e) => return Err(format!("Error parsing Y coordinate: {}", e)),
-        };
-        Ok(Coordinate(x, y))
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
-pub struct Line(Coordinate, Coordinate);
+pub struct Line(Point, Point);
 impl Line {
     /// Implements Bresenham's algorithm
-    pub fn all_points(&self) -> Vec<Coordinate> {
-        let x0 = self.0 .0;
-        let y0 = self.0 .1;
-        let x1 = self.1 .0;
-        let y1 = self.1 .1;
+    pub fn all_points(&self) -> Vec<Point> {
+        let x0 = self.0.x;
+        let y0 = self.0.y;
+        let x1 = self.1.x;
+        let y1 = self.1.y;
 
         if (y1 - y0).abs() < (x1 - x0).abs() {
             if x0 > x1 {
@@ -69,8 +50,8 @@ impl Line {
         }
     }
 
-    fn plot_line_low(x0: i32, y0: i32, x1: i32, y1: i32) -> Vec<Coordinate> {
-        let mut result = Vec::<Coordinate>::new();
+    fn plot_line_low(x0: isize, y0: isize, x1: isize, y1: isize) -> Vec<Point> {
+        let mut result = Vec::<Point>::new();
         let dx = x1 - x0;
         let mut dy = y1 - y0;
         let mut yi = 1;
@@ -82,7 +63,7 @@ impl Line {
         let mut y = y0;
 
         for x in x0..=x1 {
-            result.push(Coordinate(x, y));
+            result.push(Point { x, y });
             if d > 0 {
                 y += yi;
                 d += 2 * (dy - dx);
@@ -93,8 +74,8 @@ impl Line {
 
         result
     }
-    fn plot_line_high(x0: i32, y0: i32, x1: i32, y1: i32) -> Vec<Coordinate> {
-        let mut result = Vec::<Coordinate>::new();
+    fn plot_line_high(x0: isize, y0: isize, x1: isize, y1: isize) -> Vec<Point> {
+        let mut result = Vec::<Point>::new();
         let mut dx = x1 - x0;
         let dy = y1 - y0;
         let mut xi = 1;
@@ -108,7 +89,7 @@ impl Line {
         let mut x = x0;
 
         for y in y0..=y1 {
-            result.push(Coordinate(x, y));
+            result.push(Point { x, y });
             if d > 0 {
                 x += xi;
                 d += 2 * (dx - dy)
@@ -134,11 +115,11 @@ fn parse_lines(lines: Vec<String>) -> Result<Vec<Line>, String> {
 
     for line in lines {
         let coord_strings = line.split("->").collect::<Vec<_>>();
-        let c1 = match coord_strings[0].trim().parse::<Coordinate>() {
+        let c1 = match coord_strings[0].trim().parse::<Point>() {
             Ok(c) => c,
             Err(e) => return Err(format!("Error parsing Coordinate: {}", e)),
         };
-        let c2 = match coord_strings[1].trim().parse::<Coordinate>() {
+        let c2 = match coord_strings[1].trim().parse::<Point>() {
             Ok(c) => c,
             Err(e) => return Err(format!("Error parsing Coordinate: {}", e)),
         };
@@ -150,13 +131,15 @@ fn parse_lines(lines: Vec<String>) -> Result<Vec<Line>, String> {
 #[cfg(test)]
 mod test {
 
-    use super::{parse_lines, Coordinate, Line};
+    use aoclib::Point;
+
+    use super::{parse_lines, Line};
 
     #[test]
     fn parse_lines_works() {
         let test_data = vec![(
             vec!["1,2 -> 2,2".to_string()],
-            vec![Line(Coordinate(1, 2), Coordinate(2, 2))],
+            vec![Line(Point { x: 1, y: 2 }, Point { x: 2, y: 2 })],
         )];
 
         for (s, c) in test_data {
@@ -168,44 +151,48 @@ mod test {
     fn all_points_works() {
         let test_data = vec![
             (
-                Line(Coordinate(1, 2), Coordinate(3, 2)),
-                vec![Coordinate(1, 2), Coordinate(2, 2), Coordinate(3, 2)],
-            ),
-            (
-                Line(Coordinate(1, 2), Coordinate(1, 5)),
+                Line(Point { x: 1, y: 2 }, Point { x: 3, y: 2 }),
                 vec![
-                    Coordinate(1, 2),
-                    Coordinate(1, 3),
-                    Coordinate(1, 4),
-                    Coordinate(1, 5),
+                    Point { x: 1, y: 2 },
+                    Point { x: 2, y: 2 },
+                    Point { x: 3, y: 2 },
                 ],
             ),
             (
-                Line(Coordinate(1, 1), Coordinate(4, 4)),
+                Line(Point { x: 1, y: 2 }, Point { x: 1, y: 5 }),
                 vec![
-                    Coordinate(1, 1),
-                    Coordinate(2, 2),
-                    Coordinate(3, 3),
-                    Coordinate(4, 4),
+                    Point { x: 1, y: 2 },
+                    Point { x: 1, y: 3 },
+                    Point { x: 1, y: 4 },
+                    Point { x: 1, y: 5 },
                 ],
             ),
             (
-                Line(Coordinate(1, 1), Coordinate(4, 2)),
+                Line(Point { x: 1, y: 1 }, Point { x: 4, y: 4 }),
                 vec![
-                    Coordinate(1, 1),
-                    Coordinate(2, 1),
-                    Coordinate(3, 2),
-                    Coordinate(4, 2),
+                    Point { x: 1, y: 1 },
+                    Point { x: 2, y: 2 },
+                    Point { x: 3, y: 3 },
+                    Point { x: 4, y: 4 },
                 ],
             ),
             (
-                Line(Coordinate(1, 1), Coordinate(3, 5)),
+                Line(Point { x: 1, y: 1 }, Point { x: 4, y: 2 }),
                 vec![
-                    Coordinate(1, 1),
-                    Coordinate(1, 2),
-                    Coordinate(2, 3),
-                    Coordinate(2, 4),
-                    Coordinate(3, 5),
+                    Point { x: 1, y: 1 },
+                    Point { x: 2, y: 1 },
+                    Point { x: 3, y: 2 },
+                    Point { x: 4, y: 2 },
+                ],
+            ),
+            (
+                Line(Point { x: 1, y: 1 }, Point { x: 3, y: 5 }),
+                vec![
+                    Point { x: 1, y: 1 },
+                    Point { x: 1, y: 2 },
+                    Point { x: 2, y: 3 },
+                    Point { x: 2, y: 4 },
+                    Point { x: 3, y: 5 },
                 ],
             ),
         ];

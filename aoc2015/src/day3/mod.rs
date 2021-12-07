@@ -1,9 +1,10 @@
-use std::{ops::Add, path::PathBuf};
+use std::path::PathBuf;
+
+use aoclib::read_lines;
 
 use crate::{
     data_file,
     day3::{puzzle1::number_houses_received_present, puzzle2::number_houses_received_present_robo},
-    read_lines,
 };
 
 pub mod puzzle1;
@@ -26,16 +27,6 @@ pub enum Direction {
     East,
     South,
     West,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Coordinate(i32, i32);
-impl Add for &Coordinate {
-    type Output = Coordinate;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Coordinate(self.0 + rhs.0, self.1 + rhs.1)
-    }
 }
 
 pub fn get_directions(filename: PathBuf) -> Vec<Direction> {

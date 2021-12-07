@@ -1,12 +1,12 @@
 pub mod puzzle1;
 pub mod puzzle2;
 
+use aoclib::read_lines;
 use std::path::PathBuf;
 
 use crate::{
     data_file,
     day1::{puzzle1::count_depths, puzzle2::count_depths_windowed},
-    read_lines,
 };
 
 pub fn run() {

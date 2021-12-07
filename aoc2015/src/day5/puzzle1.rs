@@ -1,8 +1,7 @@
 use std::{path::PathBuf, str::FromStr};
 
+use aoclib::read_lines;
 use unicode_segmentation::UnicodeSegmentation;
-
-use crate::read_lines;
 
 pub fn find_nice_strings(filename: PathBuf) -> u32 {
     let mut n: u32 = 0;

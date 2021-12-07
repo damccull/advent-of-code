@@ -1,8 +1,7 @@
 use std::{path::PathBuf, str::FromStr};
 
+use aoclib::read_lines;
 use fancy_regex::Regex;
-
-use crate::read_lines;
 
 pub fn find_nice_strings_new_rules(filename: PathBuf) -> u32 {
     let mut n: u32 = 0;

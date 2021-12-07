@@ -3,12 +3,12 @@ pub mod puzzle2;
 
 use std::path::PathBuf;
 
+use aoclib::read_lines;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
     data_file,
     day4::{puzzle1::find_winning_board_id, puzzle2::find_last_winning_board_id},
-    read_lines,
 };
 
 pub fn run() {
@@ -31,12 +31,6 @@ impl BingoGame {
     pub fn new_from_file(filename: PathBuf) -> Self {
         build_game(filename)
     }
-}
-
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct Coordinate {
-    x: u32,
-    y: u32,
 }
 
 fn build_game(filename: PathBuf) -> BingoGame {

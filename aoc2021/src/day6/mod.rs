@@ -1,6 +1,8 @@
 use std::{collections::VecDeque, path::PathBuf};
 
-use crate::{data_file, read_lines};
+use aoclib::read_lines;
+
+use crate::data_file;
 
 pub fn run() {
     let pond = get_data(data_file("day6.txt"));

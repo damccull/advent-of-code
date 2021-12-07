@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 
+use aoclib::read_lines;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::{
     data_file,
     day3::{puzzle1::get_diagnostics, puzzle2::get_life_support_status},
-    read_lines,
 };
 
 pub mod puzzle1;

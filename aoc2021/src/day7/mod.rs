@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
-use crate::{data_file, day7::puzzle2::find_minimum_fuel_increasing_rate, read_lines};
+use aoclib::read_lines;
+
+use crate::{data_file, day7::puzzle2::find_minimum_fuel_increasing_rate};
 
 use self::puzzle1::find_minimum_fuel;
 

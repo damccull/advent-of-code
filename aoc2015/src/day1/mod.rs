@@ -3,10 +3,11 @@ pub mod puzzle2;
 
 use std::path::PathBuf;
 
+use aoclib::read_lines;
+
 use crate::{
     data_file,
     day1::{puzzle1::what_floor, puzzle2::what_floor_enters_basement},
-    read_lines,
 };
 
 pub fn run() {

@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 
-use crate::day5::Coordinate;
+use aoclib::Point;
 
 use super::Line;
 
 pub fn number_of_overlapping_line_points(lines: Vec<Line>) -> usize {
-    let mut all_coords = HashMap::<Coordinate, u32>::new();
+    let mut all_coords = HashMap::<Point, u32>::new();
     for line in lines {
-        let x0 = line.0 .0;
-        let y0 = line.0 .1;
-        let x1 = line.1 .0;
-        let y1 = line.1 .1;
+        let x0 = line.0.x;
+        let y0 = line.0.y;
+        let x1 = line.1.x;
+        let y1 = line.1.y;
         if x0 == x1 || y0 == y1 {
             for coord in line.all_points() {
                 let entry = all_coords.entry(coord).or_insert(0);
@@ -23,23 +23,25 @@ pub fn number_of_overlapping_line_points(lines: Vec<Line>) -> usize {
 
 #[cfg(test)]
 mod test {
-    use crate::day5::{Coordinate, Line};
+    use aoclib::Point;
+
+    use crate::day5::Line;
 
     use super::number_of_overlapping_line_points;
 
     #[test]
     fn number_of_overlapping_line_points_works() {
         let test_data = vec![
-            Line(Coordinate(0, 9), Coordinate(5, 9)),
-            Line(Coordinate(8, 0), Coordinate(0, 8)),
-            Line(Coordinate(9, 4), Coordinate(3, 4)),
-            Line(Coordinate(2, 2), Coordinate(2, 1)),
-            Line(Coordinate(7, 0), Coordinate(7, 4)),
-            Line(Coordinate(6, 4), Coordinate(2, 0)),
-            Line(Coordinate(0, 9), Coordinate(2, 9)),
-            Line(Coordinate(3, 4), Coordinate(1, 4)),
-            Line(Coordinate(0, 0), Coordinate(8, 8)),
-            Line(Coordinate(5, 5), Coordinate(8, 2)),
+            Line(Point { x: 0, y: 9 }, Point { x: 5, y: 9 }),
+            Line(Point { x: 8, y: 0 }, Point { x: 0, y: 8 }),
+            Line(Point { x: 9, y: 4 }, Point { x: 3, y: 4 }),
+            Line(Point { x: 2, y: 2 }, Point { x: 2, y: 1 }),
+            Line(Point { x: 7, y: 0 }, Point { x: 7, y: 4 }),
+            Line(Point { x: 6, y: 4 }, Point { x: 2, y: 0 }),
+            Line(Point { x: 0, y: 9 }, Point { x: 2, y: 9 }),
+            Line(Point { x: 3, y: 4 }, Point { x: 1, y: 4 }),
+            Line(Point { x: 0, y: 0 }, Point { x: 8, y: 8 }),
+            Line(Point { x: 5, y: 5 }, Point { x: 8, y: 2 }),
         ];
 
         let result = number_of_overlapping_line_points(test_data);

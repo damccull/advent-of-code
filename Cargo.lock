@@ -15,6 +15,7 @@ dependencies = [
 name = "aoc2015"
 version = "0.1.0"
 dependencies = [
+ "aoclib",
  "fancy-regex",
  "md5",
  "unicode-segmentation",
@@ -24,9 +25,14 @@ dependencies = [
 name = "aoc2021"
 version = "0.1.0"
 dependencies = [
+ "aoclib",
  "md5",
  "unicode-segmentation",
 ]
+
+[[package]]
+name = "aoclib"
+version = "0.1.0"
 
 [[package]]
 name = "bit-set"

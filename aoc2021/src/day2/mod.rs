@@ -1,9 +1,10 @@
 use std::path::PathBuf;
 
+use aoclib::read_lines;
+
 use crate::{
     data_file,
     day2::{puzzle1::determine_depth_and_distance, puzzle2::determine_depth_and_distance_with_aim},
-    read_lines,
 };
 
 pub mod puzzle1;

@@ -1,6 +1,8 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use super::{get_directions, Coordinate};
+use aoclib::Point;
+
+use super::get_directions;
 
 pub fn number_houses_received_present_robo(filename: PathBuf) -> u32 {
     // Get the data
@@ -10,15 +12,15 @@ pub fn number_houses_received_present_robo(filename: PathBuf) -> u32 {
     // Set the current coordinate to origin and insert it immediately because
     // instructions say that the origin is the first delivery.
     // Do this for both santa and robosanta.
-    let mut current_coord_santa = Coordinate(0, 0);
-    let mut current_coord_robosanta = Coordinate(0, 0);
+    let mut current_coord_santa = Point { x: 0, y: 0 };
+    let mut current_coord_robosanta = Point { x: 0, y: 0 };
     houses.insert(current_coord_santa.clone(), 2);
 
     // Set up some coordinate deltas for each direction
-    let move_north = Coordinate(0, 1);
-    let move_south = Coordinate(0, -1);
-    let move_east = Coordinate(1, 0);
-    let move_west = Coordinate(-1, 0);
+    let move_north = Point { x: 0, y: 1 };
+    let move_south = Point { x: 0, y: -1 };
+    let move_east = Point { x: 1, y: 0 };
+    let move_west = Point { x: -1, y: 0 };
 
     for (i, d) in directions.iter().enumerate() {
         // Create a new coordinate to use for the hashmap for santa
