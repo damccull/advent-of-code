@@ -1,4 +1,4 @@
-use aoc2021::{day1, day2, day3, day4, day5, day6};
+use aoc2021::{day1, day2, day3, day4, day5, day6, day7};
 
 fn main() {
     day1::run();
@@ -7,4 +7,5 @@ fn main() {
     day4::run();
     day5::run();
     day6::run();
+    day7::run();
 }

@@ -4,6 +4,7 @@ pub mod day3;
 pub mod day4;
 pub mod day5;
 pub mod day6;
+pub mod day7;
 
 // Below is code that is not part of the puzzle itself, but that supports it.
 // Example: code to load data from a file.
