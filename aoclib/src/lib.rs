@@ -20,7 +20,7 @@ pub fn data_file(base_directory: &str, filename: &str) -> PathBuf {
     base.join(filename)
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Point {
     pub x: isize,
     pub y: isize,
