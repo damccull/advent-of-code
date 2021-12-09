@@ -1,19 +1,17 @@
 use super::PointHeight;
 
 pub fn get_total_risk_level(data: Vec<Vec<PointHeight>>) -> isize {
-    let width = data[0].len();
-    let height = data.len();
-    dbg!(width, height);
+    let height = data[0].len();
+    let width = data.len();
 
     let mut low_points_tracker = Vec::<(PointHeight, bool)>::new();
 
-    for x in 0..width - 1 {
-        for y in 0..height - 1 {
+    for y in 0..height {
+        for x in 0..width {
             let check_up = y != 0;
             let check_down = y < height - 1;
             let check_left = x != 0;
             let check_right = x < width - 1;
-            dbg!(x, check_down, y, check_right, "");
 
             let lower_than_up = if check_up {
                 data[x][y].height < data[x][y - 1].height
@@ -51,7 +49,7 @@ pub fn get_total_risk_level(data: Vec<Vec<PointHeight>>) -> isize {
         .map(|(point, _)| *point)
         .collect::<Vec<PointHeight>>()
         .iter()
-        .fold(0_isize, |acc, pointheight| acc + pointheight.height)
+        .fold(0_isize, |acc, pointheight| acc + pointheight.height + 1)
 }
 
 #[cfg(test)]
@@ -83,8 +81,8 @@ mod test {
                         let height = s.parse::<isize>().expect("Could not parse height");
                         PointHeight {
                             coordinate: Point {
-                                x: row as isize,
-                                y: column as isize,
+                                x: column as isize,
+                                y: row as isize,
                             },
                             height,
                         }

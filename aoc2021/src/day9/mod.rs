@@ -33,8 +33,8 @@ fn get_data_from_file(filename: PathBuf) -> Vec<Vec<PointHeight>> {
                     let height = s.parse::<isize>().expect("Could not parse height");
                     PointHeight {
                         coordinate: Point {
-                            x: row as isize,
-                            y: column as isize,
+                            x: column as isize,
+                            y: row as isize,
                         },
                         height,
                     }
