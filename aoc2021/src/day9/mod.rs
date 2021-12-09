@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use aoclib::{read_lines, Point};
 use unicode_segmentation::UnicodeSegmentation;
 
-use crate::data_file;
+use crate::{data_file, day9::puzzle2::get_basin_size_product};
 
 use self::puzzle1::get_total_risk_level;
 
@@ -12,10 +12,17 @@ mod puzzle2;
 
 pub fn run() {
     let data = get_data_from_file(data_file("day9.txt"));
-    println!("The total risk level is: {}", get_total_risk_level(data));
+    println!(
+        "The total risk level is: {}",
+        get_total_risk_level(data.clone())
+    );
+    println!(
+        "The product of basin sizes is: {}",
+        get_basin_size_product(data)
+    );
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct PointHeight {
     pub coordinate: Point,
     pub height: isize,
