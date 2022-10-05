@@ -3,24 +3,8 @@ use std::path::PathBuf;
 use aoclib::{read_lines, Point};
 use unicode_segmentation::UnicodeSegmentation;
 
-use crate::{data_file, day9::puzzle2::get_basin_size_product};
-
-use self::puzzle1::get_total_risk_level;
-
-mod puzzle1;
-mod puzzle2;
-
-pub fn run() {
-    let data = get_data_from_file(data_file("day9.txt"));
-    println!(
-        "The total risk level is: {}",
-        get_total_risk_level(data.clone())
-    );
-    println!(
-        "The product of basin sizes is: {}",
-        get_basin_size_product(data)
-    );
-}
+pub mod puzzle1;
+pub mod puzzle2;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct PointHeight {
@@ -28,7 +12,7 @@ pub struct PointHeight {
     pub height: isize,
 }
 
-fn get_data_from_file(filename: PathBuf) -> Vec<Vec<PointHeight>> {
+pub fn get_data_from_file(filename: PathBuf) -> Vec<Vec<PointHeight>> {
     let mut result = Vec::new();
     if let Ok(lines) = read_lines(filename) {
         for (row, line) in lines.flatten().enumerate() {

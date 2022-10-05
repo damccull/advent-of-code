@@ -10,7 +10,7 @@ use unicode_segmentation::UnicodeSegmentation;
 
 pub fn run() {}
 
-fn parse_line(string: &str) -> LineResult {
+fn _parse_line(string: &str) -> _LineResult {
     let characters = UnicodeSegmentation::graphemes(string, true).collect::<Vec<_>>();
 
     let mut total_open = 0;
@@ -72,7 +72,7 @@ fn parse_line(string: &str) -> LineResult {
             || square_right > square_left
             || angle_right > angle_left
         {
-            return LineResult::Corrupt;
+            return _LineResult::Corrupt;
         }
 
         if total_close == total_open
@@ -85,7 +85,7 @@ fn parse_line(string: &str) -> LineResult {
             || square_right > square_left
             || angle_right > angle_left
         {
-            return LineResult::Corrupt;
+            return _LineResult::Corrupt;
         }
 
         if total_close != total_open
@@ -94,13 +94,13 @@ fn parse_line(string: &str) -> LineResult {
             || square_right != square_left
             || angle_right != angle_left
         {
-            return LineResult::Incomplete;
+            return _LineResult::Incomplete;
         }
     }
-    LineResult::Good
+    _LineResult::Good
 }
 
-enum LineResult {
+enum _LineResult {
     Good,
     Corrupt,
     Incomplete,

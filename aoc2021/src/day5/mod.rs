@@ -2,30 +2,8 @@ use std::path::PathBuf;
 
 use aoclib::{read_lines, Point};
 
-use crate::{data_file, day5::puzzle2::number_of_overlapping_line_points_with_diagonals};
-
-use self::puzzle1::number_of_overlapping_line_points;
-
 pub mod puzzle1;
 pub mod puzzle2;
-
-pub fn run() {
-    if let Ok(lines) = load_coordinates(data_file("day5.txt")) {
-        let overlaps = number_of_overlapping_line_points(lines.clone());
-        println!(
-            "D5P1: Number of overlapping points is: {}",
-            overlaps
-        );
-
-        let overlaps = number_of_overlapping_line_points_with_diagonals(lines);
-        println!(
-            "D5P2: Number of overlapping points when considering diagonals is: {}",
-            overlaps
-        );
-    } else {
-        panic!("Unable to load coordinates from file.");
-    }
-}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Line(Point, Point);

@@ -3,24 +3,8 @@ use std::path::PathBuf;
 use aoclib::read_lines;
 use unicode_segmentation::UnicodeSegmentation;
 
-use crate::{
-    data_file,
-    day3::{puzzle1::get_diagnostics, puzzle2::get_life_support_status},
-};
-
 pub mod puzzle1;
 pub mod puzzle2;
-
-pub fn run() {
-    println!(
-        "D3P1: The overall diagnostic code is {}.",
-        get_diagnostics(data_file("day3.txt"))
-    );
-    println!(
-        "D3P2: The overall life support status code is {}.",
-        get_life_support_status(data_file("day3.txt"))
-    );
-}
 
 pub struct DiagnosticReport {
     binary: Vec<Vec<bool>>,

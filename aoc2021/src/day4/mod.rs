@@ -6,21 +6,6 @@ use std::path::PathBuf;
 use aoclib::read_lines;
 use unicode_segmentation::UnicodeSegmentation;
 
-use crate::{
-    data_file,
-    day4::{puzzle1::find_winning_board_id, puzzle2::find_last_winning_board_id},
-};
-
-pub fn run() {
-    let g = build_game(data_file("day4.txt"));
-    let id = find_winning_board_id(g);
-    println!("D4P1: The winning board ID is {}.", id);
-
-    let g = build_game(data_file("day4.txt"));
-    let id = find_last_winning_board_id(g);
-    println!("D4P1: The winning board ID is {}.", id);
-}
-
 type BingoBoard = Vec<(u32, bool)>;
 #[derive(Debug)]
 pub struct BingoGame {
@@ -33,7 +18,7 @@ impl BingoGame {
     }
 }
 
-fn build_game(filename: PathBuf) -> BingoGame {
+pub fn build_game(filename: PathBuf) -> BingoGame {
     let data = read_data(filename);
     let mut data_iter = data.iter();
     let draws: Vec<u32> = data_iter
