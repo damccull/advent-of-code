@@ -17,7 +17,7 @@ pub fn find_nice_strings(filename: PathBuf) -> u32 {
     n
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum SantasListString {
     Nice(String),
     Naughty(String),

@@ -19,9 +19,7 @@ pub fn run() {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct Fish {
-    age: u32,
-}
+pub struct Fish;
 
 pub fn get_data(filename: PathBuf) -> Vec<usize> {
     let mut x: Vec<usize> = Vec::new();

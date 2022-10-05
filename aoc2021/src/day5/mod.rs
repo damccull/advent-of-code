@@ -14,20 +14,20 @@ pub fn run() {
         let overlaps = number_of_overlapping_line_points(lines.clone());
         println!(
             "D5P1: Number of overlapping points is: {}",
-            overlaps.to_string()
+            overlaps
         );
 
         let overlaps = number_of_overlapping_line_points_with_diagonals(lines);
         println!(
             "D5P2: Number of overlapping points when considering diagonals is: {}",
-            overlaps.to_string()
+            overlaps
         );
     } else {
         panic!("Unable to load coordinates from file.");
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Line(Point, Point);
 impl Line {
     /// Implements Bresenham's algorithm

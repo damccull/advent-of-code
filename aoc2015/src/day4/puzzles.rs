@@ -2,7 +2,7 @@ use std::fmt::Error;
 
 pub fn mine_advent_coin(seed: &str, beginning_zeroes: usize) -> Result<u64, Error> {
     for i in 1.. {
-        let hashme = format!("{}{}", seed, i.to_string());
+        let hashme = format!("{}{}", seed, i);
         let digest = md5::compute(hashme);
         let hash = format!("{:x}", digest);
         if hash.starts_with(&"0".repeat(beginning_zeroes)) {
