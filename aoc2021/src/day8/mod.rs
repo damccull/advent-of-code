@@ -8,6 +8,13 @@ use crate::data_file;
 pub struct Notebook {
     pub notes: Vec<Note>,
 }
+impl Notebook {
+    /// Returns the total number of times the digits 1, 4, 7, or 8 appear in the output of
+    /// all of the notes.
+    pub fn count_simple_digits(&self) -> usize {
+        self.notes.iter().map(|n| n.count_simple_digits()).sum()
+    }
+}
 impl TryFrom<Vec<String>> for Notebook {
     type Error = anyhow::Error;
 
@@ -25,6 +32,17 @@ pub struct Note {
     pub signal_patterns: Vec<String>,
     pub output_values: Vec<String>,
 }
+
+impl Note {
+    /// Returns the number of times the digits 1, 4, 7, or 8 appear in the output.
+    pub fn count_simple_digits(&self) -> usize {
+        self.output_values
+            .iter()
+            .filter(|d| is_simple_digit(d))
+            .count()
+    }
+}
+
 impl FromStr for Note {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -70,6 +88,13 @@ pub fn get_data(filename: &str) -> Vec<String> {
     x
 }
 
+pub fn is_simple_digit(d: &str) -> bool {
+    d.len() == 7 // Seven signal lines is digit 8
+    || d.len() == 3 // Three signal lines is digit 7
+    || d.len() == 4 // Four signal lines is digit 4
+    || d.len() == 2 // Two signal lines is digit 1
+}
+
 #[cfg(test)]
 mod tests {
     use crate::day8::get_data;
@@ -109,5 +134,19 @@ mod tests {
             // Assert
             assert!(result.is_err(), "Failed test: {}", reason);
         }
+    }
+
+    #[test]
+    fn note_count_simple_digits_returns_correct_value() {
+        // Arrange
+        const CORRECT_COUNT: usize = 26;
+
+        let notebook = Notebook::try_from(get_data("day8-test.txt")).unwrap();
+
+        // Act
+        let result = notebook.count_simple_digits();
+
+        // Assert
+        assert_eq!(CORRECT_COUNT, result);
     }
 }
