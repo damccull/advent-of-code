@@ -1,4 +1,4 @@
-use std::{fmt::Display, str::FromStr};
+use std::str::FromStr;
 
 use aoclib::read_lines;
 
@@ -106,7 +106,7 @@ impl FromStr for Note {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub enum WireSignal {
     A,
     B,
@@ -147,18 +147,59 @@ struct WireSignalMap {
     bottom_right: WireSignal,
     bottom: WireSignal,
 }
-impl TryFrom<Vec<String>> for WireSignalMap {
+impl TryFrom<Vec<Vec<WireSignal>>> for WireSignalMap {
     type Error = anyhow::Error;
 
-    fn try_from(value: Vec<String>) -> Result<Self, Self::Error> {
+    fn try_from(value: Vec<Vec<WireSignal>>) -> Result<Self, Self::Error> {
         let mut signal_map = Self::default();
         // Get the 1 digit
-        let one_digit = value.iter().find(|f| f.len() == 2);
-        if let Some(x) = one_digit {
-            //signal_map.top =
-        } else {
-            anyhow::bail!("No `1` digit code in the signal pattern");
-        }
+        let one_digit = value
+            .iter()
+            .find(|f| f.len() == 2)
+            .ok_or_else(|| anyhow::anyhow!("No `1` digit"))?;
+
+        // Get the 7 digit
+        let seven_digit = value
+            .iter()
+            .find(|f| f.len() == 3)
+            .ok_or_else(|| anyhow::anyhow!("No `7` digit"))?;
+
+        // Map the top segment
+        signal_map.top = *seven_digit
+            .iter()
+            .find(|s| one_digit.contains(s))
+            .ok_or_else(|| anyhow::anyhow!("Unable to find top segment"))?;
+
+        // To find 5, we need to get the two segments of 4 that are not also in 1
+        // Get the 4 digit
+        let four_digit = value
+            .iter()
+            .find(|f| f.len() == 4)
+            .ok_or_else(|| anyhow::anyhow!("No `4` digit"))?;
+
+        // Get the two segments that are not in 1
+        let four_left_segments = four_digit
+            .iter()
+            .filter(|f| !one_digit.contains(f))
+            .collect::<Vec<_>>();
+
+        // Get all digits that have 5 segments
+        let five_digit = value
+            .iter()
+            .filter(|f| f.len() == 5)
+            .find(|f| f.contains(four_left_segments[0]) && f.contains(four_left_segments[1]))
+            .ok_or_else(|| anyhow::anyhow!("Unable to find `5` digit"))?;
+
+        // Map the top right segment
+        signal_map.top_right = *one_digit
+            .iter()
+            .find(|f| !five_digit.contains(f))
+            .ok_or_else(|| anyhow::anyhow!("Unable to find top right segment"))?;
+        // Map the bottom right segment
+        signal_map.bottom_right = *one_digit
+            .iter()
+            .find(|f| **f != signal_map.top_right)
+            .ok_or_else(|| anyhow::anyhow!("Unable to find bottom right segment"))?;
 
         todo!()
     }
