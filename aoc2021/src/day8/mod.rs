@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 use aoclib::read_lines;
 
@@ -11,8 +11,11 @@ pub struct Notebook {
 impl Notebook {
     /// Returns the total number of times the digits 1, 4, 7, or 8 appear in the output of
     /// all of the notes.
-    pub fn count_simple_digits(&self) -> usize {
-        self.notes.iter().map(|n| n.count_simple_digits()).sum()
+    pub fn count_simple_output_digits(&self) -> usize {
+        self.notes
+            .iter()
+            .map(|n| n.count_simple_output_digits())
+            .sum()
     }
 }
 impl TryFrom<Vec<String>> for Notebook {
@@ -29,13 +32,13 @@ impl TryFrom<Vec<String>> for Notebook {
 
 #[derive(Debug)]
 pub struct Note {
-    pub signal_patterns: Vec<String>,
-    pub output_values: Vec<String>,
+    pub signal_patterns: Vec<Vec<WireSignal>>,
+    pub output_values: Vec<Vec<WireSignal>>,
 }
 
 impl Note {
     /// Returns the number of times the digits 1, 4, 7, or 8 appear in the output.
-    pub fn count_simple_digits(&self) -> usize {
+    pub fn count_simple_output_digits(&self) -> usize {
         self.output_values
             .iter()
             .filter(|d| is_simple_digit(d))
@@ -56,6 +59,18 @@ impl FromStr for Note {
             .split(' ')
             .map(|s| s.to_string())
             .collect::<Vec<String>>();
+
+        // Break each pattern into characters and map those to WireSignal variants
+        // Return a Vec<Vec<WireSignal>>
+        let signal_patterns = signal_patterns
+            .iter()
+            .map(|s| {
+                s.chars()
+                    .map(|c| c.to_string().parse::<WireSignal>())
+                    .collect::<Result<Vec<WireSignal>, _>>()
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
         if signal_patterns.len() != 10 {
             return Err(anyhow::anyhow!(
                 "Bad input; incorrect number of signal patterns"
@@ -67,6 +82,16 @@ impl FromStr for Note {
             .split(' ')
             .map(|s| s.to_string())
             .collect::<Vec<String>>();
+
+        let output_values = output_values
+            .iter()
+            .map(|s| {
+                s.chars()
+                    .map(|c| c.to_string().parse::<WireSignal>())
+                    .collect::<Result<Vec<WireSignal>, _>>()
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
         if output_values.len() != 4 {
             return Err(anyhow::anyhow!(
                 "Bad input; incorrect number of output values"
@@ -80,6 +105,65 @@ impl FromStr for Note {
     }
 }
 
+#[allow(dead_code)]
+#[derive(Debug, Default)]
+pub enum WireSignal {
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    #[default]
+    Off,
+}
+impl FromStr for WireSignal {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let r = match s {
+            "A" | "a" => Self::A,
+            "B" | "b" => Self::B,
+            "C" | "c" => Self::C,
+            "D" | "d" => Self::D,
+            "E" | "e" => Self::E,
+            "F" | "f" => Self::F,
+            "G" | "g" => Self::G,
+            _ => anyhow::bail!("Not a valid wire signal"),
+        };
+        Ok(r)
+    }
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Default)]
+struct WireSignalMap {
+    top: WireSignal,
+    top_left: WireSignal,
+    top_right: WireSignal,
+    center: WireSignal,
+    bottom_left: WireSignal,
+    bottom_right: WireSignal,
+    bottom: WireSignal,
+}
+impl TryFrom<Vec<String>> for WireSignalMap {
+    type Error = anyhow::Error;
+
+    fn try_from(value: Vec<String>) -> Result<Self, Self::Error> {
+        let mut signal_map = Self::default();
+        // Get the 1 digit
+        let one_digit = value.iter().find(|f| f.len() == 2);
+        if let Some(x) = one_digit {
+            //signal_map.top =
+        } else {
+            anyhow::bail!("No `1` digit code in the signal pattern");
+        }
+
+        todo!()
+    }
+}
+
 pub fn get_data(filename: &str) -> Vec<String> {
     let mut x = Vec::<String>::new();
     if let Ok(lines) = read_lines(data_file(filename)) {
@@ -88,12 +172,23 @@ pub fn get_data(filename: &str) -> Vec<String> {
     x
 }
 
-pub fn is_simple_digit(d: &str) -> bool {
+pub fn is_simple_digit(d: &Vec<WireSignal>) -> bool {
     d.len() == 7 // Seven signal lines is digit 8
     || d.len() == 3 // Three signal lines is digit 7
     || d.len() == 4 // Four signal lines is digit 4
     || d.len() == 2 // Two signal lines is digit 1
 }
+
+// #[allow(non_snake_case)]
+// pub mod WireSignalFlags {
+//     pub const A: u8 = 0x01;
+//     pub const B: u8 = 0x02;
+//     pub const C: u8 = 0x04;
+//     pub const D: u8 = 0x08;
+//     pub const E: u8 = 0x10;
+//     pub const F: u8 = 0x20;
+//     pub const G: u8 = 0x40;
+// }
 
 #[cfg(test)]
 mod tests {
@@ -144,7 +239,7 @@ mod tests {
         let notebook = Notebook::try_from(get_data("day8-test.txt")).unwrap();
 
         // Act
-        let result = notebook.count_simple_digits();
+        let result = notebook.count_simple_output_digits();
 
         // Assert
         assert_eq!(CORRECT_COUNT, result);
