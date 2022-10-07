@@ -184,7 +184,7 @@ impl FromStr for Note {
         let signal_patterns = parts[0]
             .trim()
             .split(' ')
-            .map(|s| s.to_string())
+            .map(|s| s.chars().sorted().collect::<String>())
             .collect::<Vec<String>>();
 
         if signal_patterns.len() != 10 {
@@ -196,7 +196,7 @@ impl FromStr for Note {
         let output_values = parts[1]
             .trim()
             .split(' ')
-            .map(|s| s.to_string())
+            .map(|s| s.chars().sorted().collect::<String>())
             .collect::<Vec<String>>();
 
         if output_values.len() != 4 {
