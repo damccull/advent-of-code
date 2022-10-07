@@ -1,6 +1,7 @@
 use std::{collections::HashMap, str::FromStr};
 
 use aoclib::read_lines;
+use itertools::Itertools;
 
 use crate::data_file;
 
@@ -82,12 +83,12 @@ impl Note {
 
         let seven = signals
             .iter()
-            .find(|f| f.len() == 4)
+            .find(|f| f.len() == 3)
             .ok_or_else(|| anyhow::anyhow!("Unable to locate digit `7`"))?;
 
         let eight = signals
             .iter()
-            .find(|f| f.len() == 4)
+            .find(|f| f.len() == 7)
             .ok_or_else(|| anyhow::anyhow!("Unable to locate digit `8`"))?;
 
         // Divide the remaining digits in half by their number of signals
@@ -116,7 +117,7 @@ impl Note {
                     && f.contains(fourchars[2])
                     && f.contains(fourchars[3])
             })
-            .ok_or_else(|| anyhow::anyhow!("Unable to locate digit `6`"))?;
+            .ok_or_else(|| anyhow::anyhow!("Unable to locate digit `9`"))?;
 
         // Take `nine` from the vec
         let nine = six_nine_zero.remove(nine_position);
