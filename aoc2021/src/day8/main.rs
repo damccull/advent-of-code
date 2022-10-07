@@ -9,7 +9,5 @@ fn main() -> Result<(), anyhow::Error> {
         puzzle1
     );
 
-
-
     Ok(())
 }
