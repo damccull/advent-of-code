@@ -17,6 +17,11 @@ impl Notebook {
             .map(|n| n.count_simple_output_digits())
             .sum()
     }
+
+    /// Returns the total of all the output value totals from each note added together.
+    pub fn get_output_value_total(&self) -> i32 {
+        self.notes.iter().map(|n| n.get_output_value_total()).sum()
+    }
 }
 impl TryFrom<Vec<String>> for Notebook {
     type Error = anyhow::Error;
@@ -44,6 +49,23 @@ impl Note {
             .iter()
             .filter(|d| is_simple_digit(d))
             .count()
+    }
+
+    /// Returns the total of the four output values added together.
+    pub fn get_output_value_total(&self) -> i32 {
+        let x = self
+            .output_values
+            .iter()
+            .map(|v| self.digit_pattern_map[v])
+            .collect::<Vec<_>>();
+
+        let mut total = 0;
+        for (i, n) in x.iter().enumerate() {
+            let multiplier = 10_i32.pow((x.len() - i - 1) as u32);
+            total += n * multiplier;
+        }
+
+        total
     }
 
     fn get_digit_map(signals: &[String]) -> Result<HashMap<String, i32>, anyhow::Error> {
