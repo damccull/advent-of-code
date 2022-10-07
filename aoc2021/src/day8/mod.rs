@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use aoclib::read_lines;
 
@@ -32,8 +32,9 @@ impl TryFrom<Vec<String>> for Notebook {
 
 #[derive(Debug)]
 pub struct Note {
-    pub signal_patterns: Vec<Vec<WireSignal>>,
-    pub output_values: Vec<Vec<WireSignal>>,
+    pub signal_patterns: Vec<String>,
+    pub output_values: Vec<String>,
+    pub digit_pattern_map: HashMap<String, i32>,
 }
 
 impl Note {
@@ -43,6 +44,109 @@ impl Note {
             .iter()
             .filter(|d| is_simple_digit(d))
             .count()
+    }
+
+    fn get_digit_map(signals: &[String]) -> Result<HashMap<String, i32>, anyhow::Error> {
+        // Get the four easy digits
+        let one = signals
+            .iter()
+            .find(|f| f.len() == 2)
+            .ok_or_else(|| anyhow::anyhow!("Unable to locate digit `1`"))?;
+
+        let four = signals
+            .iter()
+            .find(|f| f.len() == 4)
+            .ok_or_else(|| anyhow::anyhow!("Unable to locate digit `4`"))?;
+
+        let seven = signals
+            .iter()
+            .find(|f| f.len() == 4)
+            .ok_or_else(|| anyhow::anyhow!("Unable to locate digit `7`"))?;
+
+        let eight = signals
+            .iter()
+            .find(|f| f.len() == 4)
+            .ok_or_else(|| anyhow::anyhow!("Unable to locate digit `8`"))?;
+
+        // Divide the remaining digits in half by their number of signals
+        let mut two_three_five = signals.iter().filter(|f| f.len() == 5).collect::<Vec<_>>();
+        let mut six_nine_zero = signals.iter().filter(|f| f.len() == 6).collect::<Vec<_>>();
+
+        // Compare digits from the six_nine_zero group to `one` to identify `six`
+        let six_position = six_nine_zero
+            .iter()
+            .position(|f| {
+                let onechars = one.chars().collect::<Vec<_>>();
+                !(f.contains(onechars[0]) && f.contains(onechars[1]))
+            })
+            .ok_or_else(|| anyhow::anyhow!("Unable to locate digit `6`"))?;
+
+        // Take `six` from the vec
+        let six = six_nine_zero.remove(six_position);
+
+        // Compare digits from the six_nine_zero group to `four` to identify `nine`
+        let nine_position = six_nine_zero
+            .iter()
+            .position(|f| {
+                let fourchars = four.chars().collect::<Vec<_>>();
+                f.contains(fourchars[0])
+                    && f.contains(fourchars[1])
+                    && f.contains(fourchars[2])
+                    && f.contains(fourchars[3])
+            })
+            .ok_or_else(|| anyhow::anyhow!("Unable to locate digit `6`"))?;
+
+        // Take `nine` from the vec
+        let nine = six_nine_zero.remove(nine_position);
+
+        // Last one should be `zero` digit at position 0;
+        let zero = six_nine_zero.remove(0);
+
+        // Compare digits from the two_three_five group to `one` to identify `three`
+        let three_position = two_three_five
+            .iter()
+            .position(|f| {
+                let onechars = one.chars().collect::<Vec<_>>();
+                f.contains(onechars[0]) && f.contains(onechars[1])
+            })
+            .ok_or_else(|| anyhow::anyhow!("Unable to locate digit `3`"))?;
+
+        // Take `three` from the vec
+        let three = two_three_five.remove(three_position);
+
+        // Compare digits from the two_three_five group to `six` to identify `five`
+        let five_position = two_three_five
+            .iter()
+            .position(|f| {
+                let fivechars = f.chars().collect::<Vec<_>>();
+                six.contains(fivechars[0])
+                    && six.contains(fivechars[1])
+                    && six.contains(fivechars[2])
+                    && six.contains(fivechars[3])
+                    && six.contains(fivechars[4])
+            })
+            .ok_or_else(|| anyhow::anyhow!("Unable to locate digit `5`"))?;
+
+        // Take `three` from the vec
+        let five = two_three_five.remove(five_position);
+
+        // Last one should be `two` digit at position 0;
+        let two = two_three_five.remove(0);
+
+        let mut digit_map = HashMap::new();
+
+        digit_map.insert(one.clone(), 1);
+        digit_map.insert(two.clone(), 2);
+        digit_map.insert(three.clone(), 3);
+        digit_map.insert(four.clone(), 4);
+        digit_map.insert(five.clone(), 5);
+        digit_map.insert(six.clone(), 6);
+        digit_map.insert(seven.clone(), 7);
+        digit_map.insert(eight.clone(), 8);
+        digit_map.insert(nine.clone(), 9);
+        digit_map.insert(zero.clone(), 0);
+
+        Ok(digit_map)
     }
 }
 
@@ -60,17 +164,6 @@ impl FromStr for Note {
             .map(|s| s.to_string())
             .collect::<Vec<String>>();
 
-        // Break each pattern into characters and map those to WireSignal variants
-        // Return a Vec<Vec<WireSignal>>
-        let signal_patterns = signal_patterns
-            .iter()
-            .map(|s| {
-                s.chars()
-                    .map(|c| c.to_string().parse::<WireSignal>())
-                    .collect::<Result<Vec<WireSignal>, _>>()
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-
         if signal_patterns.len() != 10 {
             return Err(anyhow::anyhow!(
                 "Bad input; incorrect number of signal patterns"
@@ -83,125 +176,19 @@ impl FromStr for Note {
             .map(|s| s.to_string())
             .collect::<Vec<String>>();
 
-        let output_values = output_values
-            .iter()
-            .map(|s| {
-                s.chars()
-                    .map(|c| c.to_string().parse::<WireSignal>())
-                    .collect::<Result<Vec<WireSignal>, _>>()
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-
         if output_values.len() != 4 {
             return Err(anyhow::anyhow!(
                 "Bad input; incorrect number of output values"
             ));
         }
 
+        let digit_pattern_map = Note::get_digit_map(&signal_patterns)?;
+
         Ok(Self {
             signal_patterns,
             output_values,
+            digit_pattern_map,
         })
-    }
-}
-
-#[allow(dead_code)]
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub enum WireSignal {
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    G,
-    #[default]
-    Off,
-}
-impl FromStr for WireSignal {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let r = match s {
-            "A" | "a" => Self::A,
-            "B" | "b" => Self::B,
-            "C" | "c" => Self::C,
-            "D" | "d" => Self::D,
-            "E" | "e" => Self::E,
-            "F" | "f" => Self::F,
-            "G" | "g" => Self::G,
-            _ => anyhow::bail!("Not a valid wire signal"),
-        };
-        Ok(r)
-    }
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Default)]
-struct WireSignalMap {
-    top: WireSignal,
-    top_left: WireSignal,
-    top_right: WireSignal,
-    center: WireSignal,
-    bottom_left: WireSignal,
-    bottom_right: WireSignal,
-    bottom: WireSignal,
-}
-impl TryFrom<Vec<Vec<WireSignal>>> for WireSignalMap {
-    type Error = anyhow::Error;
-
-    fn try_from(value: Vec<Vec<WireSignal>>) -> Result<Self, Self::Error> {
-        let mut signal_map = Self::default();
-        // Get the 1 digit
-        let one_digit = value
-            .iter()
-            .find(|f| f.len() == 2)
-            .ok_or_else(|| anyhow::anyhow!("No `1` digit"))?;
-
-        // Get the 7 digit
-        let seven_digit = value
-            .iter()
-            .find(|f| f.len() == 3)
-            .ok_or_else(|| anyhow::anyhow!("No `7` digit"))?;
-
-        // Map the top segment
-        signal_map.top = *seven_digit
-            .iter()
-            .find(|s| one_digit.contains(s))
-            .ok_or_else(|| anyhow::anyhow!("Unable to find top segment"))?;
-
-        // To find 5, we need to get the two segments of 4 that are not also in 1
-        // Get the 4 digit
-        let four_digit = value
-            .iter()
-            .find(|f| f.len() == 4)
-            .ok_or_else(|| anyhow::anyhow!("No `4` digit"))?;
-
-        // Get the two segments that are not in 1
-        let four_left_segments = four_digit
-            .iter()
-            .filter(|f| !one_digit.contains(f))
-            .collect::<Vec<_>>();
-
-        // Get all digits that have 5 segments
-        let five_digit = value
-            .iter()
-            .filter(|f| f.len() == 5)
-            .find(|f| f.contains(four_left_segments[0]) && f.contains(four_left_segments[1]))
-            .ok_or_else(|| anyhow::anyhow!("Unable to find `5` digit"))?;
-
-        // Map the top right segment
-        signal_map.top_right = *one_digit
-            .iter()
-            .find(|f| !five_digit.contains(f))
-            .ok_or_else(|| anyhow::anyhow!("Unable to find top right segment"))?;
-        // Map the bottom right segment
-        signal_map.bottom_right = *one_digit
-            .iter()
-            .find(|f| **f != signal_map.top_right)
-            .ok_or_else(|| anyhow::anyhow!("Unable to find bottom right segment"))?;
-
-        todo!()
     }
 }
 
@@ -213,23 +200,12 @@ pub fn get_data(filename: &str) -> Vec<String> {
     x
 }
 
-pub fn is_simple_digit(d: &Vec<WireSignal>) -> bool {
+pub fn is_simple_digit(d: &str) -> bool {
     d.len() == 7 // Seven signal lines is digit 8
     || d.len() == 3 // Three signal lines is digit 7
     || d.len() == 4 // Four signal lines is digit 4
     || d.len() == 2 // Two signal lines is digit 1
 }
-
-// #[allow(non_snake_case)]
-// pub mod WireSignalFlags {
-//     pub const A: u8 = 0x01;
-//     pub const B: u8 = 0x02;
-//     pub const C: u8 = 0x04;
-//     pub const D: u8 = 0x08;
-//     pub const E: u8 = 0x10;
-//     pub const F: u8 = 0x20;
-//     pub const G: u8 = 0x40;
-// }
 
 #[cfg(test)]
 mod tests {
