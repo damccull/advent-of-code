@@ -284,4 +284,18 @@ mod tests {
         // Assert
         assert_eq!(CORRECT_COUNT, result);
     }
+
+    #[test]
+    fn get_output_value_total_returns_correct_value() {
+        // Arrange
+        const CORRECT_COUNT: i32 = 61229;
+
+        let notebook = Notebook::try_from(get_data("day8-test.txt")).unwrap();
+
+        // Act
+        let result = notebook.get_output_value_total();
+
+        // Assert
+        assert_eq!(CORRECT_COUNT, result);
+    }
 }
