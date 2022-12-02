@@ -1,2 +1,3 @@
 [workspace]
-members = ["common", "2015"]
+default-members = ["2022"]
+members = ["common", "2015", "2022"]
