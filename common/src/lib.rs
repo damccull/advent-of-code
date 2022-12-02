@@ -3,7 +3,7 @@ use std::{
     io::{BufRead, BufReader},
 };
 
-pub fn read_data_from_file(filepath: String) -> Result<Vec<String>, anyhow::Error> {
+pub fn read_data_from_file(filepath: &str) -> Result<Vec<String>, anyhow::Error> {
     let file = File::open(filepath)?;
     let lines = BufReader::new(file)
         .lines()

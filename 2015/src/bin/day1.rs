@@ -1,7 +1,7 @@
 use advent_of_code_common::read_data_from_file;
 
 fn main() -> Result<(), anyhow::Error> {
-    let data = read_data_from_file("data/2015-day1.txt".to_string())?;
+    let data = read_data_from_file("data/2015-day1.txt")?;
     let directions = data
         .first()
         .ok_or_else(|| anyhow::anyhow!("Can't read data from file"))?;
