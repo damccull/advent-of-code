@@ -8,12 +8,16 @@ code state.
 Check on my [youtube channel][youtube-channel] for livestreams of the solves, both archived and upcoming!
 The videos may not be well made, but they have good code in them!
 
-# Youtube Links
+## Youtube Links
 
-## 2015
+### 2015
 
-### Day 1
+* Day 1
+  * [2015 Day 1 Live Solve](https://www.youtube.com/watch?v=jioKQtQO1QE)
 
-* [2015 Day 1 Live Solve](https://www.youtube.com/watch?v=jioKQtQO1QE)
+### 2022
+
+* Day 1
+  * No live solve yet
 
 [youtube-channel]: https://www.youtube.com/channel/UC5ajZHgJwh8ZUgxQ91Mq7zw "Freetime Programmer Youtube Channel"
