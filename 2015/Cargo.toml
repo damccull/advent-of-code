@@ -13,3 +13,4 @@ path = "src/bin/day1.rs"
 
 [dependencies]
 anyhow = "1.0.65"
+advent-of-code-common = {path = "../common"}
