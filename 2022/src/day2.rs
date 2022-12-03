@@ -111,17 +111,21 @@ fn calculate_score(rounds: Vec<Round>) -> u32 {
 
 fn determine_round_winner(round: Round) -> Outcome {
     match round.opponent_move {
-        Move::Rock if round.player_move == Move::Paper => Outcome::Player,
-        Move::Rock if round.player_move == Move::Scissors => Outcome::Opponent,
-        Move::Rock => Outcome::Draw,
-
-        Move::Paper if round.player_move == Move::Scissors => Outcome::Player,
-        Move::Paper if round.player_move == Move::Rock => Outcome::Opponent,
-        Move::Paper => Outcome::Draw,
-
-        Move::Scissors if round.player_move == Move::Rock => Outcome::Player,
-        Move::Scissors if round.player_move == Move::Paper => Outcome::Opponent,
-        Move::Scissors => Outcome::Draw,
+        Move::Rock => match round.player_move {
+            Move::Rock => Outcome::Draw,
+            Move::Paper => Outcome::Player,
+            Move::Scissors => Outcome::Opponent,
+        },
+        Move::Paper => match round.player_move {
+            Move::Rock => Outcome::Opponent,
+            Move::Paper => Outcome::Draw,
+            Move::Scissors => Outcome::Player,
+        },
+        Move::Scissors => match round.player_move {
+            Move::Rock => Outcome::Player,
+            Move::Paper => Outcome::Opponent,
+            Move::Scissors => Outcome::Draw,
+        },
     }
 }
 
