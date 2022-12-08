@@ -163,11 +163,6 @@ fn process_data(data: Vec<String>) -> Result<FilesystemEntity, anyhow::Error> {
     Ok(filesystem)
 }
 
-enum Command {
-    ChangeDirectory { location: String },
-    ListFiles,
-}
-
 #[derive(Debug, Clone)]
 enum FilesystemEntity {
     File {
@@ -195,21 +190,6 @@ impl FilesystemEntity {
             FilesystemEntity::File { parent, .. } => Some(parent.clone()),
             FilesystemEntity::Directory { parent, .. } => parent.clone(),
         }
-    }
-
-    pub fn path(&self) -> String {
-        let Some(parent) = self.parent() else{
-            return String::default();
-        };
-        let Some(parent) = parent.upgrade() else {
-            return String::default();
-        };
-        let name = match self {
-            FilesystemEntity::File { name, .. } => name,
-            FilesystemEntity::Directory { name, .. } => name,
-        };
-
-        format!("{}/{}", parent.path(), name)
     }
 
     pub fn size(&self) -> u32 {
