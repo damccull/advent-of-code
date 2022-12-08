@@ -4,7 +4,7 @@ fn main() -> Result<(), anyhow::Error> {
     let data = read_data_from_file("data/day6.txt")?
         .pop()
         .ok_or_else(|| anyhow::anyhow!("Unable to get data"))?;
-    let result = find_packet_start_marker(&data)
+    let result = find_marker(&data, 4)
         .ok_or_else(|| anyhow::anyhow!("Unable to find the packet start marker"))?;
     println!("Packet start marker is complete at character {}", result);
 
@@ -15,18 +15,6 @@ fn main() -> Result<(), anyhow::Error> {
         result,
     );
     Ok(())
-}
-
-fn find_packet_start_marker(data: &str) -> Option<usize> {
-    // Add 4 at  the end to account for the 1-based index the puzzle expects and the 3 extra characters
-    // after the start position
-    Some(
-        data.as_bytes().windows(4).position(|x| {
-            (x[1] != x[0])
-                && (x[2] != x[1] && x[2] != x[0])
-                && (x[3] != x[2] && x[3] != x[1] && x[3] != x[0])
-        })? + 4,
-    )
 }
 
 fn find_marker(data: &str, number_distinct_characters: usize) -> Option<usize> {
@@ -52,27 +40,7 @@ fn find_marker(data: &str, number_distinct_characters: usize) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{find_marker, find_packet_start_marker};
-
-    #[test]
-    fn find_packet_start_marker_works() {
-        let data = vec![
-            ("mjqjpqmgbljsphdztnvjfqwrcgsmlb", 7),
-            ("bvwbjplbgvbhsrlpgdmjqwftvncz", 5),
-            ("nppdvjthqldpwncqszvftbrmjlhg", 6),
-            ("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg", 10),
-            ("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", 11),
-        ];
-
-        for (test, answer) in data {
-            assert_eq!(
-                find_packet_start_marker(test).unwrap(),
-                answer,
-                "Couldn't find answer: {}",
-                test
-            );
-        }
-    }
+    use crate::find_marker;
 
     #[test]
     fn find_marker_start_works() {
