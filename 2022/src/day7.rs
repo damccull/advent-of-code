@@ -34,9 +34,7 @@ fn process_data(data: Vec<String>) -> Result<FilesystemEntity, anyhow::Error> {
                             //See if the directory already exists in current directory
                             let dir = match current_directory.as_ref() {
                                 FilesystemEntity::Directory { contents, .. } => {
-                                    let x = contents.borrow();
-                                    let y = x.iter().find(|f| f.name() == path);
-                                    y
+                                    contents.borrow().iter().find(|f| f.name() == path).cloned()
                                 }
                                 _ => {
                                     anyhow::bail!("Should never reach this");
@@ -51,7 +49,7 @@ fn process_data(data: Vec<String>) -> Result<FilesystemEntity, anyhow::Error> {
                                     contents: RefCell::new(Vec::new()),
                                     parent: Some(Rc::downgrade(&current_directory)),
                                 });
-                                current_directory.add_to_contents(newdir.clone());
+                                current_directory.add_to_contents(newdir.clone())?;
                                 current_directory = newdir.clone();
                             }
                         }
@@ -63,6 +61,8 @@ fn process_data(data: Vec<String>) -> Result<FilesystemEntity, anyhow::Error> {
                     anyhow::bail!("Unrecognized command")
                 }
             }
+        } else {
+            // Handle files
         }
     }
 
@@ -132,7 +132,7 @@ impl FilesystemEntity {
     pub fn add_to_contents(&self, entity: Rc<FilesystemEntity>) -> Result<(), anyhow::Error> {
         match self {
             FilesystemEntity::Directory { contents, .. } => {
-                contents.get_mut().push(entity);
+                contents.borrow_mut().push(entity);
                 Ok(())
             }
             _ => {
