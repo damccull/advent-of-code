@@ -1,12 +1,85 @@
 use std::{
-    borrow::BorrowMut,
     cell::RefCell,
-    fs::File,
     rc::{Rc, Weak},
 };
 
+use advent_of_code_common::read_data_from_file;
+
+const DEVICE_SPACE_NEEDED: u32 = 30000000;
+const DEVICE_TOTAL_SPACE: u32 = 70000000;
+
 fn main() -> Result<(), anyhow::Error> {
+    let data = process_data(read_data_from_file("data/day7.txt")?)?;
+
+    let result = size_of_directories_smaller_than_100000(Rc::new(data.clone()))
+        .ok_or_else(|| anyhow::anyhow!("Unable to determine size"))?;
+
+    println!(
+        "The total size of all directories with less than 100000 is {}",
+        result
+    );
+
+    let result =
+        size_of_directory_to_delete(Rc::new(data), DEVICE_SPACE_NEEDED, DEVICE_TOTAL_SPACE)?;
+
+    println!("The size of the directory to delete is {}", result);
+
     Ok(())
+}
+
+fn size_of_directory_to_delete(
+    filesystem: Rc<FilesystemEntity>,
+    space_needed: u32,
+    total_space: u32,
+) -> Result<u32, anyhow::Error> {
+    let target_size = space_needed - (total_space - filesystem.size());
+
+    let mut flat = flatten_directory_tree(filesystem)?;
+    flat.sort_by_key(|d| d.size());
+
+    let result = flat
+        .iter()
+        .find(|d| d.size() >= target_size)
+        .ok_or_else(|| anyhow::anyhow!("No directory meets the size requirement"))?;
+    Ok(result.size())
+}
+
+fn flatten_directory_tree(
+    filesystem: Rc<FilesystemEntity>,
+) -> Result<Vec<Rc<FilesystemEntity>>, anyhow::Error> {
+    let mut result = Vec::new();
+    result.push(filesystem.clone());
+
+    let children = filesystem
+        .children()
+        .ok_or_else(|| anyhow::anyhow!("Couldn't borrow children"))?;
+    let children = children.borrow();
+
+    for entity in children.iter() {
+        match entity.as_ref() {
+            FilesystemEntity::File { .. } => {}
+            FilesystemEntity::Directory { .. } => {
+                result.append(&mut flatten_directory_tree(entity.clone())?);
+            }
+        }
+    }
+
+    Ok(result)
+}
+
+fn size_of_directories_smaller_than_100000(filesystem: Rc<FilesystemEntity>) -> Option<u32> {
+    let Ok(flat) = flatten_directory_tree(filesystem) else {
+        return None;
+    };
+
+    let mut size = 0_u32;
+    for entity in flat.iter() {
+        let x = entity.size();
+        if entity.name() != "/" && x < 100000 {
+            size += x;
+        }
+    }
+    Some(size)
 }
 
 fn process_data(data: Vec<String>) -> Result<FilesystemEntity, anyhow::Error> {
@@ -14,9 +87,7 @@ fn process_data(data: Vec<String>) -> Result<FilesystemEntity, anyhow::Error> {
     let mut current_directory = filesystem.clone();
     for line in data {
         if line.starts_with('$') {
-            dbg!(&line);
             if let Some(line) = line.strip_prefix("$ ") {
-                dbg!(&line);
                 if let Some(path) = line.strip_prefix("cd ") {
                     // Create new FilesytemEntity at path or move to existing one
                     match path {
@@ -62,13 +133,34 @@ fn process_data(data: Vec<String>) -> Result<FilesystemEntity, anyhow::Error> {
                 }
             }
         } else {
-            // Handle files
+            // Handle `ls` output
+            let (dir_or_size, name) = line
+                .split_once(' ')
+                .ok_or_else(|| anyhow::anyhow!("Badly formed data"))?;
+
+            if dir_or_size == "dir" {
+                // Insert new directory
+                let newdir = Rc::new(FilesystemEntity::Directory {
+                    name: name.to_string(),
+                    contents: RefCell::new(Vec::new()),
+                    parent: Some(Rc::downgrade(&current_directory)),
+                });
+                current_directory.add_to_contents(newdir.clone())?;
+            } else {
+                // Insert new file
+                let newdir = Rc::new(FilesystemEntity::File {
+                    name: name.to_string(),
+                    size: dir_or_size.parse()?,
+                    parent: Rc::downgrade(&current_directory),
+                });
+                current_directory.add_to_contents(newdir.clone())?;
+            }
         }
     }
 
-    dbg!(&filesystem);
+    let filesystem = (*filesystem).clone();
 
-    todo!()
+    Ok(filesystem)
 }
 
 enum Command {
@@ -76,7 +168,7 @@ enum Command {
     ListFiles,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum FilesystemEntity {
     File {
         name: String,
@@ -140,6 +232,13 @@ impl FilesystemEntity {
             }
         }
     }
+
+    pub fn children(&self) -> Option<RefCell<Vec<Rc<FilesystemEntity>>>> {
+        match self {
+            FilesystemEntity::Directory { contents, .. } => Some(contents.clone()),
+            _ => None,
+        }
+    }
 }
 
 impl Default for FilesystemEntity {
@@ -154,7 +253,12 @@ impl Default for FilesystemEntity {
 
 #[cfg(test)]
 mod tests {
-    use crate::process_data;
+    use std::rc::Rc;
+
+    use crate::{
+        flatten_directory_tree, process_data, size_of_directories_smaller_than_100000,
+        size_of_directory_to_delete, DEVICE_SPACE_NEEDED, DEVICE_TOTAL_SPACE,
+    };
 
     fn test_data() -> Vec<String> {
         r##"$ cd /
@@ -190,8 +294,33 @@ $ ls
     fn process_data_works() {
         let data = process_data(test_data()).unwrap();
 
-        println!("Size: {}", data.size());
+        assert_eq!(48381165, data.size());
+    }
 
-        assert_eq!(1, 1);
+    #[test]
+    fn size_of_directories_smaller_than_100000_is_correct() {
+        let data = Rc::new(process_data(test_data()).unwrap());
+
+        let result = size_of_directories_smaller_than_100000(data).unwrap();
+
+        assert_eq!(result, 95437);
+    }
+
+    #[test]
+    fn size_of_directory_to_delete_works() {
+        let data = Rc::new(process_data(test_data()).unwrap());
+
+        let result = size_of_directory_to_delete(data, DEVICE_SPACE_NEEDED, DEVICE_TOTAL_SPACE);
+
+        assert_eq!(result.unwrap(), 24933642)
+    }
+
+    #[test]
+    fn flatten_directory_tree_works() {
+        let data = Rc::new(process_data(test_data()).unwrap());
+
+        let result = flatten_directory_tree(data).unwrap();
+
+        assert_eq!(result.len(), 4);
     }
 }
