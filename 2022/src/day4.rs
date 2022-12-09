@@ -82,27 +82,17 @@ impl Assignment {
         Self { beginning, end }
     }
     pub fn overlaps_with(&self, other: &Assignment) -> bool {
-        if self.beginning >= other.beginning && self.beginning <= other.end
+        self.beginning >= other.beginning && self.beginning <= other.end
             || self.end >= other.beginning && self.end <= other.end
             || other.beginning >= self.beginning && other.beginning <= self.end
             || other.end >= self.beginning && other.end <= self.end
-        {
-            return true;
-        }
-
-        false
     }
 
     pub fn fully_contains(&self, other: &Assignment) -> bool {
-        if self.beginning >= other.beginning
+        self.beginning >= other.beginning
             && self.beginning <= other.end
             && self.end >= other.beginning
             && self.end <= other.end
-        {
-            return true;
-        }
-
-        false
     }
 }
 
