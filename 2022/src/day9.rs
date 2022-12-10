@@ -39,6 +39,90 @@ fn locations_seen_by_tail(data: Vec<Move>) -> Result<HashSet<Point>, anyhow::Err
     Ok(tail_visited_points)
 }
 
+fn rope_movement(
+    data: Vec<Move>,
+    number_knots: usize,
+) -> Result<Vec<HashSet<Point>>, anyhow::Error> {
+    let mut last_locations = vec![Point::default(); number_knots];
+    let mut knot_histories = vec![HashSet::<Point>::new(); number_knots];
+
+    for m in data {
+        match m {
+            Move::Up(distance) => {
+                move_vertical_advanced(&mut last_locations, &mut knot_histories, distance)
+            }
+            Move::Down(distance) => {
+                move_vertical_advanced(&mut last_locations, &mut knot_histories, -distance)
+            }
+            Move::Left(distance) => {
+                move_horizontal_advanced(&mut last_locations, &mut knot_histories, -distance)
+            }
+            Move::Right(distance) => {
+                move_horizontal_advanced(&mut last_locations, &mut knot_histories, distance)
+            }
+        };
+    }
+    Ok(knot_histories)
+}
+
+fn move_vertical_advanced(
+    last_locations: &mut Vec<Point>,
+    histories: &mut [HashSet<Point>],
+    distance: i64,
+) {
+    let unit_distance = distance.abs() / distance;
+
+    for _ in 0..distance.abs() {
+        last_locations[0].y += unit_distance;
+        histories[0].insert(last_locations[0]);
+
+        for i in 1..last_locations.len() - 1 {
+            let lead = last_locations[i];
+            let mut trail = last_locations[i + 1];
+            if (trail.y - lead.y).abs() > 1 {
+                trail.y += unit_distance;
+
+                //Check if diagonal movement is necessary
+                if trail.x != lead.x {
+                    let xdist = -(trail.x - lead.x);
+                    trail.x += xdist;
+                }
+            }
+        }
+    }
+}
+
+fn move_horizontal_advanced(
+    last_locations: &mut Vec<Point>,
+    histories: &mut [HashSet<Point>],
+    distance: i64,
+) {
+    let unit_distance = distance.abs() / distance;
+
+    for _ in 0..distance.abs() {
+        last_locations[0].x += unit_distance;
+        histories[0].insert(last_locations[0]);
+
+        for i in 1..last_locations.len() - 1 {
+            let lead = last_locations[i];
+            let trail = &mut last_locations[i + 1];
+            if (trail.x - lead.x).abs() > 1 {
+                trail.x += unit_distance;
+
+                //Check if diagonal movement is necessary
+                if trail.y != lead.y {
+                    let ydist = -(trail.y - lead.y);
+                    trail.y += ydist;
+                }
+            }
+            //last_locations[i] = trail.clone();
+            histories[i].insert(*trail);
+        }
+    }
+
+    dbg!(last_locations);
+}
+
 fn render_history(history: HashSet<Point>) -> Result<(), anyhow::Error> {
     let max_y = history
         .iter()
@@ -81,50 +165,58 @@ fn render_history(history: HashSet<Point>) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-fn move_vertical(head: Point, tail: Point, distance: i64) -> (Point, Point, HashSet<Point>) {
-    let mut head = head;
-    let mut tail = tail;
-    let mut tail_history = HashSet::new();
+fn move_vertical(
+    lead_knot: Point,
+    follower_knot: Point,
+    distance: i64,
+) -> (Point, Point, HashSet<Point>) {
+    let mut lead_knot = lead_knot;
+    let mut follower_knot = follower_knot;
+    let mut follower_history = HashSet::new();
     let unit_distance = distance.abs() / distance;
 
     for _ in 0..distance.abs() {
-        head.y += unit_distance;
+        lead_knot.y += unit_distance;
 
-        if (tail.y - head.y).abs() > 1 {
+        if (follower_knot.y - lead_knot.y).abs() > 1 {
             //Need to move the tail
-            tail.y += unit_distance;
+            follower_knot.y += unit_distance;
             //See if a diagonal move is needed
-            if tail.x != head.x {
-                let xdist = -(tail.x - head.x);
-                tail.x += xdist;
+            if follower_knot.x != lead_knot.x {
+                let xdist = -(follower_knot.x - lead_knot.x);
+                follower_knot.x += xdist;
             }
         }
-        tail_history.insert(tail);
+        follower_history.insert(follower_knot);
     }
-    (head, tail, tail_history)
+    (lead_knot, follower_knot, follower_history)
 }
 
-fn move_horizontal(head: Point, tail: Point, distance: i64) -> (Point, Point, HashSet<Point>) {
-    let mut head = head;
-    let mut tail = tail;
-    let mut tail_history = HashSet::new();
+fn move_horizontal(
+    lead_knot: Point,
+    follower_knot: Point,
+    distance: i64,
+) -> (Point, Point, HashSet<Point>) {
+    let mut lead_knot = lead_knot;
+    let mut follower_knot = follower_knot;
+    let mut follower_history = HashSet::new();
     let unit_distance = distance.abs() / distance;
 
     for _ in 0..distance.abs() {
-        head.x += unit_distance;
+        lead_knot.x += unit_distance;
 
-        if (tail.x - head.x).abs() > 1 {
+        if (follower_knot.x - lead_knot.x).abs() > 1 {
             //Need to move the tail
-            tail.x += unit_distance;
+            follower_knot.x += unit_distance;
             //See if a diagonal move is needed
-            if tail.y != head.y {
-                let ydist = -(tail.y - head.y);
-                tail.y += ydist;
+            if follower_knot.y != lead_knot.y {
+                let ydist = -(follower_knot.y - lead_knot.y);
+                follower_knot.y += ydist;
             }
         }
-        tail_history.insert(tail);
+        follower_history.insert(follower_knot);
     }
-    (head, tail, tail_history)
+    (lead_knot, follower_knot, follower_history)
 }
 
 fn process_data(data: Vec<String>) -> Result<Vec<Move>, anyhow::Error> {
@@ -187,7 +279,7 @@ impl TryFrom<(&str, &str)> for Move {
 
 #[cfg(test)]
 mod tests {
-    use crate::{locations_seen_by_tail, process_data, Move};
+    use crate::{locations_seen_by_tail, process_data, rope_movement, Move};
 
     fn test_data() -> Vec<String> {
         r##"R 4
@@ -198,6 +290,20 @@ R 4
 D 1
 L 5
 R 2"##
+            .lines()
+            .map(|s| s.to_string())
+            .collect()
+    }
+
+    fn test_data2() -> Vec<String> {
+        r##"R 5
+U 8
+L 8
+D 3
+R 17
+D 10
+L 25
+U 20"##
             .lines()
             .map(|s| s.to_string())
             .collect()
@@ -218,5 +324,14 @@ R 2"##
         let result = locations_seen_by_tail(data).unwrap();
 
         assert_eq!(result.len(), 13);
+    }
+
+    #[test]
+    fn rope_movement_works() {
+        let data = process_data(test_data2()).unwrap();
+
+        let result = rope_movement(data, 10).unwrap();
+
+        assert_eq!(result[9].len(), 36);
     }
 }
