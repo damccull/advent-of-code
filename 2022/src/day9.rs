@@ -5,6 +5,7 @@ use std::{
 };
 
 use advent_of_code_common::read_data_from_file;
+use image::RgbImage;
 
 fn main() -> Result<(), anyhow::Error> {
     let data = process_data(read_data_from_file("data/day9.txt")?)?;
@@ -14,12 +15,16 @@ fn main() -> Result<(), anyhow::Error> {
         result[result.len() - 1].len()
     );
 
-    let result = rope_movement(data, 10)?.unique_locations;
+    let result = rope_movement(data, 10)?;
+    let unique_locations = result.unique_locations;
+
     //render_history(result[result.len() - 1].clone())?;
     println!(
         "The tail of the 10-knot rope was in {} locations",
-        result[result.len() - 1].len()
+        unique_locations[unique_locations.len() - 1].len()
     );
+
+    render_rope_to_images(result.histories)?;
 
     Ok(())
 }
@@ -48,6 +53,8 @@ fn rope_movement(data: Vec<Instruction>, number_knots: usize) -> Result<RopeResu
             let trail_current_position = trail[trail.len() - 1];
             let difference = lead_current_location - trail_current_position;
 
+            let mut new_trail_position = trail_current_position;
+
             if difference.x.abs() > 1 {
                 // Move x
                 let xmove_x = trail_current_position.x + difference.unit().x;
@@ -60,8 +67,7 @@ fn rope_movement(data: Vec<Instruction>, number_knots: usize) -> Result<RopeResu
                     x: xmove_x,
                     y: xmove_y,
                 };
-                trail.push(p);
-                unique_locations[i].insert(p);
+                new_trail_position = p;
             } else if difference.y.abs() > 1 {
                 // Move y
 
@@ -75,9 +81,10 @@ fn rope_movement(data: Vec<Instruction>, number_knots: usize) -> Result<RopeResu
                     x: ymove_x,
                     y: ymove_y,
                 };
-                trail.push(p);
-                unique_locations[i].insert(p);
+                new_trail_position = p;
             }
+            trail.push(new_trail_position);
+            unique_locations[i].insert(new_trail_position);
         }
     }
     let result = RopeResult {
@@ -114,6 +121,70 @@ fn instructions_to_moves(data: Vec<Instruction>) -> Vec<Move> {
         };
     }
     moves
+}
+
+fn render_rope_to_images(rope_movement: Vec<Vec<Point>>) -> Result<(), anyhow::Error> {
+    let max_y = rope_movement
+        .iter()
+        .flat_map(|knot| knot.iter().map(|p| p.y).max())
+        .max()
+        .ok_or_else(|| anyhow::anyhow!("Could not get map max y coordinate"))?;
+    let min_y = rope_movement
+        .iter()
+        .flat_map(|knot| knot.iter().map(|p| p.y).min())
+        .min()
+        .ok_or_else(|| anyhow::anyhow!("Could not get map min y coordinate"))?;
+    let max_x = rope_movement
+        .iter()
+        .flat_map(|knot| knot.iter().map(|p| p.x).max())
+        .max()
+        .ok_or_else(|| anyhow::anyhow!("Could not get map max x coordinate"))?;
+    let min_x = rope_movement
+        .iter()
+        .flat_map(|knot| knot.iter().map(|p| p.x).min())
+        .min()
+        .ok_or_else(|| anyhow::anyhow!("Could not get map min x coordinate"))?;
+    let width = max_x - min_x;
+    let height = max_y - min_y;
+    let offset_x = min_x.abs();
+    let offset_y = min_y.abs();
+
+    let image_width: u32 = width.try_into()?;
+    let image_width = image_width + 1;
+    let image_height: u32 = height.try_into()?;
+    let image_height = image_height + 1;
+    dbg!(
+        max_x,
+        min_x,
+        max_y,
+        min_y,
+        width,
+        height,
+        offset_x,
+        offset_y,
+        image_width,
+        image_height
+    );
+
+    let mut imgbuf = RgbImage::new(image_width, image_height);
+
+    for step in 0..rope_movement[0].len() {
+        // Erase image
+        for (_, _, pixel) in imgbuf.enumerate_pixels_mut() {
+            let color = image::Rgb([0, 0, 0]);
+            *pixel = color;
+        }
+        // Draw rope
+        for knot in &rope_movement {
+            let x = (knot[step].x + offset_x).try_into()?;
+            let y = (knot[step].y + offset_y).try_into()?;
+            imgbuf.get_pixel_mut(x, y).0 = [255, 255, 255];
+        }
+        // Save frame
+        imgbuf.save(format!("animation/frame{step}.gif"))?;
+    }
+
+    Ok(())
 }
 
 #[allow(dead_code)]
