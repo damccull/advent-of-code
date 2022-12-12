@@ -24,7 +24,7 @@ fn main() -> Result<(), anyhow::Error> {
         unique_locations[unique_locations.len() - 1].len()
     );
 
-    render_rope_to_images(result.histories)?;
+    //render_rope_to_images(result.histories)?;
 
     Ok(())
 }
@@ -123,6 +123,7 @@ fn instructions_to_moves(data: Vec<Instruction>) -> Vec<Move> {
     moves
 }
 
+#[allow(dead_code)]
 fn render_rope_to_images(rope_movement: Vec<Vec<Point>>) -> Result<(), anyhow::Error> {
     let max_y = rope_movement
         .iter()
