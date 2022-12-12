@@ -143,7 +143,7 @@ fn render_history(history: HashSet<Point>) -> Result<(), anyhow::Error> {
     let offset_x = min_x.abs();
     let offset_y = min_y.abs();
 
-    dbg!(min_x, max_x, min_y, max_y, width, height, offset_x, offset_y);
+    //dbg!(min_x, max_x, min_y, max_y, width, height, offset_x, offset_y);
     let mut map = vec![vec!['.'; width as usize + 1]; height as usize + 1];
 
     for p in history {
