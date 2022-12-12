@@ -1,31 +1,38 @@
-use std::{collections::HashSet, hash::Hash};
+use std::{
+    collections::HashSet,
+    hash::Hash,
+    ops::{Add, Sub},
+};
 
 use advent_of_code_common::read_data_from_file;
 
 fn main() -> Result<(), anyhow::Error> {
     let data = process_data(read_data_from_file("data/day9.txt")?)?;
-    let result = locations_seen_by_tail(data)?;
+    let result = locations_seen_by_tail(data.clone())?;
     println!("The tail of the rope was in {} locations", result.len());
 
-    render_history(result)?;
+    let result = rope_movement(data, 10)?;
+    render_history(result[result.len()].clone())?;
 
     Ok(())
 }
 
-fn locations_seen_by_tail(data: Vec<Move>) -> Result<HashSet<Point>, anyhow::Error> {
+fn locations_seen_by_tail(data: Vec<Instruction>) -> Result<HashSet<Point>, anyhow::Error> {
     let mut head_last_location = Point::default();
     let mut tail_last_location = Point::default();
     let mut tail_visited_points = HashSet::new();
     for m in data {
         let (head, tail, tail_history) = match m {
-            Move::Up(distance) => move_vertical(head_last_location, tail_last_location, distance),
-            Move::Down(distance) => {
+            Instruction::Up(distance) => {
+                move_vertical(head_last_location, tail_last_location, distance)
+            }
+            Instruction::Down(distance) => {
                 move_vertical(head_last_location, tail_last_location, -distance)
             }
-            Move::Left(distance) => {
+            Instruction::Left(distance) => {
                 move_horizontal(head_last_location, tail_last_location, -distance)
             }
-            Move::Right(distance) => {
+            Instruction::Right(distance) => {
                 move_horizontal(head_last_location, tail_last_location, distance)
             }
         };
@@ -40,87 +47,94 @@ fn locations_seen_by_tail(data: Vec<Move>) -> Result<HashSet<Point>, anyhow::Err
 }
 
 fn rope_movement(
-    data: Vec<Move>,
+    data: Vec<Instruction>,
     number_knots: usize,
 ) -> Result<Vec<HashSet<Point>>, anyhow::Error> {
-    let mut last_locations = vec![Point::default(); number_knots];
-    let mut knot_histories = vec![HashSet::<Point>::new(); number_knots];
+    let mut knot_histories = vec![vec![Point::default(); 1]; number_knots];
+    let mut unique_locations = vec![HashSet::<Point>::new(); number_knots];
+    for history in unique_locations.iter_mut() {
+        history.insert(Point::default());
+    }
 
+    let moves = instructions_to_moves(data);
+
+    for m in moves {
+        let last_head_location = &knot_histories[0][knot_histories[0].len() - 1];
+
+        let new_head_location = last_head_location + m;
+        knot_histories[0].push(new_head_location);
+        unique_locations[0].insert(new_head_location);
+
+        for i in 1..knot_histories.len() {
+            let lead = knot_histories[i - 1].clone();
+            let trail = &mut knot_histories[i];
+
+            let lead_current_location = lead[lead.len() - 1];
+            let trail_current_position = trail[trail.len() - 1];
+            let difference = lead_current_location - trail_current_position;
+
+            if difference.x.abs() > 1 {
+                // Move x
+                let xmove_x = trail_current_position.x + difference.unit().x;
+                let mut xmove_y = trail_current_position.y;
+                if difference.y != 0 {
+                    // Diagonal move
+                    xmove_y = trail_current_position.y + (difference.unit().y);
+                }
+                let p = Point {
+                    x: xmove_x,
+                    y: xmove_y,
+                };
+                trail.push(p);
+                unique_locations[i].insert(p);
+            } else if difference.y.abs() > 1 {
+                // Move y
+
+                let ymove_y = trail_current_position.y + difference.unit().y;
+                let mut ymove_x = trail_current_position.x;
+                if difference.x != 0 {
+                    // Diagonal move
+                    ymove_x = trail_current_position.x + (difference.unit().x);
+                }
+                let p = Point {
+                    x: ymove_x,
+                    y: ymove_y,
+                };
+                trail.push(p);
+                unique_locations[i].insert(p);
+            }
+        }
+    }
+    Ok(unique_locations)
+}
+
+fn instructions_to_moves(data: Vec<Instruction>) -> Vec<Move> {
+    let mut moves = Vec::new();
     for m in data {
         match m {
-            Move::Up(distance) => {
-                move_vertical_advanced(&mut last_locations, &mut knot_histories, distance)
+            Instruction::Up(distance) => {
+                for _ in 0..distance {
+                    moves.push(Move { x: 0, y: 1 });
+                }
             }
-            Move::Down(distance) => {
-                move_vertical_advanced(&mut last_locations, &mut knot_histories, -distance)
+            Instruction::Down(distance) => {
+                for _ in 0..distance {
+                    moves.push(Move { x: 0, y: -1 });
+                }
             }
-            Move::Left(distance) => {
-                move_horizontal_advanced(&mut last_locations, &mut knot_histories, -distance)
+            Instruction::Left(distance) => {
+                for _ in 0..distance {
+                    moves.push(Move { x: -1, y: 0 });
+                }
             }
-            Move::Right(distance) => {
-                move_horizontal_advanced(&mut last_locations, &mut knot_histories, distance)
+            Instruction::Right(distance) => {
+                for _ in 0..distance {
+                    moves.push(Move { x: 1, y: 0 });
+                }
             }
         };
     }
-    Ok(knot_histories)
-}
-
-fn move_vertical_advanced(
-    last_locations: &mut Vec<Point>,
-    histories: &mut [HashSet<Point>],
-    distance: i64,
-) {
-    let unit_distance = distance.abs() / distance;
-
-    for _ in 0..distance.abs() {
-        last_locations[0].y += unit_distance;
-        histories[0].insert(last_locations[0]);
-
-        for i in 1..last_locations.len() - 1 {
-            let lead = last_locations[i];
-            let mut trail = last_locations[i + 1];
-            if (trail.y - lead.y).abs() > 1 {
-                trail.y += unit_distance;
-
-                //Check if diagonal movement is necessary
-                if trail.x != lead.x {
-                    let xdist = -(trail.x - lead.x);
-                    trail.x += xdist;
-                }
-            }
-        }
-    }
-}
-
-fn move_horizontal_advanced(
-    last_locations: &mut Vec<Point>,
-    histories: &mut [HashSet<Point>],
-    distance: i64,
-) {
-    let unit_distance = distance.abs() / distance;
-
-    for _ in 0..distance.abs() {
-        last_locations[0].x += unit_distance;
-        histories[0].insert(last_locations[0]);
-
-        for i in 1..last_locations.len() - 1 {
-            let lead = last_locations[i];
-            let trail = &mut last_locations[i + 1];
-            if (trail.x - lead.x).abs() > 1 {
-                trail.x += unit_distance;
-
-                //Check if diagonal movement is necessary
-                if trail.y != lead.y {
-                    let ydist = -(trail.y - lead.y);
-                    trail.y += ydist;
-                }
-            }
-            //last_locations[i] = trail.clone();
-            histories[i].insert(*trail);
-        }
-    }
-
-    dbg!(last_locations);
+    moves
 }
 
 fn render_history(history: HashSet<Point>) -> Result<(), anyhow::Error> {
@@ -153,7 +167,8 @@ fn render_history(history: HashSet<Point>) -> Result<(), anyhow::Error> {
     let mut map = vec![vec!['.'; width as usize + 1]; height as usize + 1];
 
     for p in history {
-        map[((p.y as isize) + offset_y) as usize][((p.x as isize) + offset_x) as usize] = '#';
+        let c = if p.x == 0 && p.y == 0 { 'S' } else { '#' };
+        map[((p.y as isize) + offset_y) as usize][((p.x as isize) + offset_x) as usize] = c;
     }
     for line in map.into_iter().rev() {
         let mut s = String::default();
@@ -219,14 +234,14 @@ fn move_horizontal(
     (lead_knot, follower_knot, follower_history)
 }
 
-fn process_data(data: Vec<String>) -> Result<Vec<Move>, anyhow::Error> {
+fn process_data(data: Vec<String>) -> Result<Vec<Instruction>, anyhow::Error> {
     data.iter()
         .map(|step| {
             step.split_once(' ')
                 .ok_or_else(|| anyhow::anyhow!("Unable to split step string"))?
                 .try_into()
         })
-        .collect::<Result<Vec<Move>, anyhow::Error>>()
+        .collect::<Result<Vec<Instruction>, anyhow::Error>>()
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
@@ -234,26 +249,83 @@ struct Point {
     pub x: i64,
     pub y: i64,
 }
+impl Point {
+    pub fn unit(&self) -> Self {
+        let x = if self.x == 0 {
+            0
+        } else {
+            self.x.abs() / self.x
+        };
+        let y = if self.y == 0 {
+            0
+        } else {
+            self.y.abs() / self.y
+        };
+        Self { x, y }
+    }
+}
 
-#[derive(Debug, PartialEq, Eq)]
-enum Move {
+impl Add<Move> for Point {
+    type Output = Point;
+
+    fn add(self, rhs: Move) -> Self::Output {
+        Point {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+impl Add<Move> for &Point {
+    type Output = Point;
+
+    fn add(self, rhs: Move) -> Self::Output {
+        Point {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl Sub<Point> for Point {
+    type Output = Point;
+
+    fn sub(self, rhs: Point) -> Self::Output {
+        Point {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+impl Sub<Point> for &Point {
+    type Output = Point;
+
+    fn sub(self, rhs: Point) -> Self::Output {
+        Point {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum Instruction {
     Up(i64),
     Down(i64),
     Left(i64),
     Right(i64),
 }
 
-impl TryFrom<(&str, &str)> for Move {
+impl TryFrom<(&str, &str)> for Instruction {
     type Error = anyhow::Error;
 
     fn try_from(value: (&str, &str)) -> Result<Self, Self::Error> {
         let (direction, distance) = value;
         let distance = distance.parse()?;
         let result = match direction.to_lowercase().as_str() {
-            "u" => Ok(Move::Up(distance)),
-            "d" => Ok(Move::Down(distance)),
-            "r" => Ok(Move::Right(distance)),
-            "l" => Ok(Move::Left(distance)),
+            "u" => Ok(Instruction::Up(distance)),
+            "d" => Ok(Instruction::Down(distance)),
+            "r" => Ok(Instruction::Right(distance)),
+            "l" => Ok(Instruction::Left(distance)),
             _ => Err(anyhow::anyhow!("Invalid step")),
         }?;
 
@@ -261,25 +333,15 @@ impl TryFrom<(&str, &str)> for Move {
     }
 }
 
-// impl Add<Move> for Point {
-//     type Output = Point;
-
-//     fn add(self, rhs: Move) -> Self::Output {
-//         Point {
-//             x: self.x + rhs.x_distance,
-//             y: self.y + rhs.y_distance,
-//         }
-//     }
-// }
-
-// struct Move {
-//     pub x_distance: i32,
-//     pub y_distance: i32,
-// }
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
+struct Move {
+    pub x: i64,
+    pub y: i64,
+}
 
 #[cfg(test)]
 mod tests {
-    use crate::{locations_seen_by_tail, process_data, rope_movement, Move};
+    use crate::{locations_seen_by_tail, process_data, rope_movement, Instruction};
 
     fn test_data() -> Vec<String> {
         r##"R 4
@@ -314,7 +376,7 @@ U 20"##
         let data = process_data(test_data()).unwrap();
 
         assert!(!data.is_empty());
-        assert_eq!(data[0], Move::Right(4));
+        assert_eq!(data[0], Instruction::Right(4));
     }
 
     #[test]
