@@ -8,48 +8,23 @@ use advent_of_code_common::read_data_from_file;
 
 fn main() -> Result<(), anyhow::Error> {
     let data = process_data(read_data_from_file("data/day9.txt")?)?;
-    let result = locations_seen_by_tail(data.clone())?;
-    println!("The tail of the rope was in {} locations", result.len());
+    let result = rope_movement(data.clone(), 2)?.unique_locations;
+    println!(
+        "The tail of the rope was in {} locations",
+        result[result.len() - 1].len()
+    );
 
-    let result = rope_movement(data, 10)?;
-    render_history(result[result.len()].clone())?;
+    let result = rope_movement(data, 10)?.unique_locations;
+    //render_history(result[result.len() - 1].clone())?;
+    println!(
+        "The tail of the 10-knot rope was in {} locations",
+        result[result.len() - 1].len()
+    );
 
     Ok(())
 }
 
-fn locations_seen_by_tail(data: Vec<Instruction>) -> Result<HashSet<Point>, anyhow::Error> {
-    let mut head_last_location = Point::default();
-    let mut tail_last_location = Point::default();
-    let mut tail_visited_points = HashSet::new();
-    for m in data {
-        let (head, tail, tail_history) = match m {
-            Instruction::Up(distance) => {
-                move_vertical(head_last_location, tail_last_location, distance)
-            }
-            Instruction::Down(distance) => {
-                move_vertical(head_last_location, tail_last_location, -distance)
-            }
-            Instruction::Left(distance) => {
-                move_horizontal(head_last_location, tail_last_location, -distance)
-            }
-            Instruction::Right(distance) => {
-                move_horizontal(head_last_location, tail_last_location, distance)
-            }
-        };
-        head_last_location = head;
-        tail_last_location = tail;
-        for p in tail_history {
-            tail_visited_points.insert(p);
-        }
-    }
-
-    Ok(tail_visited_points)
-}
-
-fn rope_movement(
-    data: Vec<Instruction>,
-    number_knots: usize,
-) -> Result<Vec<HashSet<Point>>, anyhow::Error> {
+fn rope_movement(data: Vec<Instruction>, number_knots: usize) -> Result<RopeResult, anyhow::Error> {
     let mut knot_histories = vec![vec![Point::default(); 1]; number_knots];
     let mut unique_locations = vec![HashSet::<Point>::new(); number_knots];
     for history in unique_locations.iter_mut() {
@@ -105,7 +80,11 @@ fn rope_movement(
             }
         }
     }
-    Ok(unique_locations)
+    let result = RopeResult {
+        histories: knot_histories,
+        unique_locations,
+    };
+    Ok(result)
 }
 
 fn instructions_to_moves(data: Vec<Instruction>) -> Vec<Move> {
@@ -137,6 +116,7 @@ fn instructions_to_moves(data: Vec<Instruction>) -> Vec<Move> {
     moves
 }
 
+#[allow(dead_code)]
 fn render_history(history: HashSet<Point>) -> Result<(), anyhow::Error> {
     let max_y = history
         .iter()
@@ -180,60 +160,6 @@ fn render_history(history: HashSet<Point>) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-fn move_vertical(
-    lead_knot: Point,
-    follower_knot: Point,
-    distance: i64,
-) -> (Point, Point, HashSet<Point>) {
-    let mut lead_knot = lead_knot;
-    let mut follower_knot = follower_knot;
-    let mut follower_history = HashSet::new();
-    let unit_distance = distance.abs() / distance;
-
-    for _ in 0..distance.abs() {
-        lead_knot.y += unit_distance;
-
-        if (follower_knot.y - lead_knot.y).abs() > 1 {
-            //Need to move the tail
-            follower_knot.y += unit_distance;
-            //See if a diagonal move is needed
-            if follower_knot.x != lead_knot.x {
-                let xdist = -(follower_knot.x - lead_knot.x);
-                follower_knot.x += xdist;
-            }
-        }
-        follower_history.insert(follower_knot);
-    }
-    (lead_knot, follower_knot, follower_history)
-}
-
-fn move_horizontal(
-    lead_knot: Point,
-    follower_knot: Point,
-    distance: i64,
-) -> (Point, Point, HashSet<Point>) {
-    let mut lead_knot = lead_knot;
-    let mut follower_knot = follower_knot;
-    let mut follower_history = HashSet::new();
-    let unit_distance = distance.abs() / distance;
-
-    for _ in 0..distance.abs() {
-        lead_knot.x += unit_distance;
-
-        if (follower_knot.x - lead_knot.x).abs() > 1 {
-            //Need to move the tail
-            follower_knot.x += unit_distance;
-            //See if a diagonal move is needed
-            if follower_knot.y != lead_knot.y {
-                let ydist = -(follower_knot.y - lead_knot.y);
-                follower_knot.y += ydist;
-            }
-        }
-        follower_history.insert(follower_knot);
-    }
-    (lead_knot, follower_knot, follower_history)
-}
-
 fn process_data(data: Vec<String>) -> Result<Vec<Instruction>, anyhow::Error> {
     data.iter()
         .map(|step| {
@@ -242,6 +168,13 @@ fn process_data(data: Vec<String>) -> Result<Vec<Instruction>, anyhow::Error> {
                 .try_into()
         })
         .collect::<Result<Vec<Instruction>, anyhow::Error>>()
+}
+
+#[allow(dead_code)]
+#[derive(Debug)]
+struct RopeResult {
+    histories: Vec<Vec<Point>>,
+    unique_locations: Vec<HashSet<Point>>,
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
@@ -341,7 +274,7 @@ struct Move {
 
 #[cfg(test)]
 mod tests {
-    use crate::{locations_seen_by_tail, process_data, rope_movement, Instruction};
+    use crate::{process_data, rope_movement, Instruction};
 
     fn test_data() -> Vec<String> {
         r##"R 4
@@ -383,9 +316,12 @@ U 20"##
     fn locations_seen_by_tail_works() {
         let data = process_data(test_data()).unwrap();
 
-        let result = locations_seen_by_tail(data).unwrap();
+        let result = rope_movement(data, 2).unwrap();
 
-        assert_eq!(result.len(), 13);
+        assert_eq!(
+            result.unique_locations[result.unique_locations.len() - 1].len(),
+            13
+        );
     }
 
     #[test]
@@ -394,6 +330,9 @@ U 20"##
 
         let result = rope_movement(data, 10).unwrap();
 
-        assert_eq!(result[9].len(), 36);
+        assert_eq!(
+            result.unique_locations[result.unique_locations.len() - 1].len(),
+            36
+        );
     }
 }
