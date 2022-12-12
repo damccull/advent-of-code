@@ -168,17 +168,36 @@ fn render_rope_to_images(rope_movement: Vec<Vec<Point>>) -> Result<(), anyhow::E
 
     let mut imgbuf = RgbImage::new(image_width, image_height);
 
+    let notify_step = 100;
+    let total_images: usize = rope_movement.iter().map(|c| c.len()).sum();
     for step in 0..rope_movement[0].len() {
+        if step % notify_step == 0 {
+            println!(
+                "Rendering {} through {} of {} images",
+                step,
+                step + notify_step,
+                total_images
+            );
+        }
         // Erase image
         for (_, _, pixel) in imgbuf.enumerate_pixels_mut() {
             let color = image::Rgb([0, 0, 0]);
             *pixel = color;
         }
+
+        for oldposition in 0..step {
+            for knot in &rope_movement {
+                let x = (knot[oldposition].x + offset_x).try_into()?;
+                let y = (knot[oldposition].y + offset_y).try_into()?;
+                imgbuf.get_pixel_mut(x, y).0 = [128, 128, 128];
+            }
+        }
+
         // Draw rope
         for knot in &rope_movement {
             let x = (knot[step].x + offset_x).try_into()?;
             let y = (knot[step].y + offset_y).try_into()?;
-            imgbuf.get_pixel_mut(x, y).0 = [255, 255, 255];
+            imgbuf.get_pixel_mut(x, y).0 = [0, 255, 0];
         }
         // Save frame
         imgbuf.save(format!("animation/frame{step}.gif"))?;
