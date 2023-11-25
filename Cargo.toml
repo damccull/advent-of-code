@@ -1,3 +1,4 @@
 [workspace]
-default-members = ["2022"]
-members = ["common", "2015", "2022"]
+default-members = ["2023"]
+members = ["common", "2015", "2022", "2023"]
+resolver = "2"
