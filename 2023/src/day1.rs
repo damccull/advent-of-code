@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 
 #[allow(unused_imports)]
 use advent_of_code_common::read_data_from_file;
