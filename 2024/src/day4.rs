@@ -11,11 +11,11 @@ fn main() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-fn puzzle1(input: &str) -> Result<u32, anyhow::Error> {
+fn puzzle1(_input: &str) -> Result<u32, anyhow::Error> {
     todo!()
 }
 
-fn puzzle2(input: &str) -> Result<u32, anyhow::Error> {
+fn puzzle2(_input: &str) -> Result<u32, anyhow::Error> {
     todo!()
 }
 
