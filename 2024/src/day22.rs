@@ -2,12 +2,12 @@
 use advent_of_code_common::read_data_from_file;
 
 fn main() -> Result<(), anyhow::Error> {
-    let data = include_str!("../data/day1.txt");
+    let data = include_str!("../data/day22.txt");
     let result = puzzle1(data).unwrap();
-    println!("Day 1 Puzzle 1: {}", result);
+    println!("Day 22 Puzzle 1: {}", result);
 
     let result = puzzle2(data).unwrap();
-    println!("Day 2 Puzzle 2: {}", result);
+    println!("Day 22 Puzzle 2: {}", result);
     Ok(())
 }
 
@@ -25,14 +25,14 @@ mod tests {
 
     #[test]
     fn day1() {
-        let data = include_str!("../data/day1puzzle1-test.txt");
+        let data = include_str!("../data/d22p1-test.txt");
         let result = puzzle1(data);
         assert_eq!(result.unwrap(), 142);
     }
 
     #[test]
     fn day2() {
-        let data = include_str!("../data/day1puzzle2-test.txt");
+        let data = include_str!("../data/d22p2-test.txt");
         let result = puzzle2(data);
         assert_eq!(result.unwrap(), 281);
     }
