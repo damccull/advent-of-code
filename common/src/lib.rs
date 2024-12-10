@@ -11,3 +11,12 @@ pub fn read_data_from_file(filepath: &str) -> Result<Vec<String>, anyhow::Error>
 
     Ok(lines)
 }
+
+pub type Lines = std::io::Lines<BufReader<File>>;
+
+pub fn read_lines_from_file(filepath: &str) -> Result<Lines, anyhow::Error> {
+    let file = File::open(filepath)?;
+    let lines = BufReader::new(file).lines();
+
+    Ok(lines)
+}
