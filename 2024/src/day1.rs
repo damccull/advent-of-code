@@ -50,7 +50,7 @@ fn puzzle2(input: &'static str) -> Result<i32, anyhow::Error> {
 
     let mut results = Vec::new();
 
-    for (k, v) in nums1.iter().enumerate() {
+    for v in nums1.iter() {
         let r = nums2.iter().filter(|a| **a == *v).count();
 
         let r: i32 = r as i32;
@@ -81,16 +81,13 @@ fn get_nums(input: &str) -> IResult<&str, (i32, i32)> {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::{read_to_string, File};
 
     use anyhow::Result;
 
     #[test]
     fn puzzle1() -> Result<()> {
         let data = include_str!("../data/d1p1-test.txt");
-        //let data = read_lines_from_file("data/d1p1-test.txt")?;
-        //let data = read_to_string("data/d1p1-test.txt")?;
-        let result = crate::puzzle1(&data);
+        let result = crate::puzzle1(data);
         assert_eq!(result.unwrap(), 11);
         Ok(())
     }
