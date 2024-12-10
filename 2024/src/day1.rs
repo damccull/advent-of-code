@@ -1,6 +1,5 @@
 #[allow(unused_imports)]
 use advent_of_code_common::read_data_from_file;
-use advent_of_code_common::Lines;
 use anyhow::Result;
 use nom::{
     character::complete::{digit1, line_ending, space1},
