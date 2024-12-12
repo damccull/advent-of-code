@@ -58,36 +58,21 @@ fn puzzle1(input: &'static str) -> Result<usize, anyhow::Error> {
 }
 
 fn puzzle2(input: &'static str) -> Result<usize, anyhow::Error> {
+    // TODO: Going to need to compare all possibilities of removing, and see if we can create
+    // a valid report from any particular original state by removing just a single option.
+    // Maybe I can algorithmically determine a subset by recursion.
     let (_, reports) = read_reports(input).finish()?;
-    dbg!(&reports.len());
     let result = reports
         .into_iter()
         .filter(|report| {
-            let trend = match get_trend(&report) {
+            let trend = match get_trend(report) {
                 Some(t) => t,
                 None => {
                     return false;
                 }
             };
 
-            if let Validity::Invalid(i) = check_for_validity(&trend, report) {
-                // Bad once, remove offending level and try again
-                let error_corrected_report = {
-                    let mut corrected = report.clone();
-                    corrected.remove(i);
-                    corrected
-                };
-                if let Validity::Invalid(_v) = check_for_validity(&trend, &error_corrected_report) {
-                    // Bad twice, naughty list
-                    dbg!("=======================");
-                    dbg!(&report, &trend, &i, &error_corrected_report);
-                    false
-                } else {
-                    true
-                }
-            } else {
-                true
-            }
+            !matches!(check_for_validity(&trend, report), Validity::Invalid)
         })
         .count();
     Ok(result)
@@ -95,31 +80,55 @@ fn puzzle2(input: &'static str) -> Result<usize, anyhow::Error> {
 
 enum Validity {
     Valid,
-    Invalid(usize),
+    Invalid,
 }
 
 fn check_for_validity(trend: &Trend, report: &[i32]) -> Validity {
-    for (i, win) in report.windows(2).enumerate() {
-        match win[0].cmp(&win[1]) {
-            std::cmp::Ordering::Less => match trend {
-                Trend::Ascending => {
-                    if !(1..=3).contains(&(win[1] - win[0])) {
-                        return Validity::Invalid(i + 1);
+    let do_check = |report: &[i32]| {
+        for (i, win) in report.windows(2).enumerate() {
+            match win[0].cmp(&win[1]) {
+                std::cmp::Ordering::Less => match trend {
+                    Trend::Ascending => {
+                        if !(1..=3).contains(&(win[1] - win[0])) {
+                            return Some(vec![i, i + 1]);
+                        }
                     }
-                }
-                Trend::Descending => return Validity::Invalid(i + 1),
-            },
-            std::cmp::Ordering::Equal => return Validity::Invalid(i + 1),
-            std::cmp::Ordering::Greater => match trend {
-                Trend::Ascending => return Validity::Invalid(i + 1),
-                Trend::Descending => {
-                    if !(1..=3).contains(&(win[0] - win[1])) {
-                        return Validity::Invalid(i + 1);
+                    Trend::Descending => return Some(vec![i, i + 1]),
+                },
+                std::cmp::Ordering::Equal => return Some(vec![i + 1]),
+                std::cmp::Ordering::Greater => match trend {
+                    Trend::Ascending => return Some(vec![i, i + 1]),
+                    Trend::Descending => {
+                        if !(1..=3).contains(&(win[0] - win[1])) {
+                            return Some(vec![i, i + 1]);
+                        }
                     }
-                }
-            },
+                },
+            }
         }
-    }
+        None
+    };
+
+    // INFO: Initial Check
+    if let Some(correction_candidates) = do_check(report) {
+        // INFO: First correction candidate
+        let mut corrected_report = report.to_vec();
+        corrected_report.remove(correction_candidates[0]);
+
+        if do_check(&corrected_report).is_some() {
+            // INFO: Second correction candidate, if it exists
+            if correction_candidates.len() > 1 {
+                corrected_report = report.to_vec();
+                corrected_report.remove(correction_candidates[1]);
+                if do_check(&corrected_report).is_some() {
+                    return Validity::Invalid;
+                }
+            } else {
+                return Validity::Invalid;
+            }
+        };
+    };
+
     Validity::Valid
 }
 
