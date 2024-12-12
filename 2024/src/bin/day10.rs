@@ -2,7 +2,7 @@
 use advent_of_code_common::read_data_from_file;
 
 fn main() -> Result<(), anyhow::Error> {
-    let data = include_str!("../data/day10.txt");
+    let data = include_str!("../../data/day10.txt");
     let result = crate::puzzle1(data).unwrap();
     println!("Day 10 Puzzle 1: {}", result);
 
@@ -21,18 +21,17 @@ fn puzzle2(_input: &str) -> Result<u32, anyhow::Error> {
 
 #[cfg(test)]
 mod tests {
-    
 
     #[test]
     fn puzzle1() {
-        let data = include_str!("../data/d10p1-test.txt");
+        let data = include_str!("../../data/d10p1-test.txt");
         let result = crate::puzzle1(data);
         assert_eq!(result.unwrap(), 142);
     }
 
     #[test]
     fn puzzle2() {
-        let data = include_str!("../data/d10p2-test.txt");
+        let data = include_str!("../../data/d10p2-test.txt");
         let result = crate::puzzle2(data);
         assert_eq!(result.unwrap(), 281);
     }
