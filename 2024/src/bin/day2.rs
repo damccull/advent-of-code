@@ -10,7 +10,7 @@ use nom::{
 };
 
 fn main() -> Result<(), anyhow::Error> {
-    let data = include_str!("../data/day2.txt");
+    let data = include_str!("../../data/day2.txt");
     let result = crate::puzzle1(data).unwrap();
     println!("Day 2 Puzzle 1: {}", result);
 
@@ -63,13 +63,6 @@ fn puzzle2(input: &'static str) -> Result<usize, anyhow::Error> {
     let result = reports
         .into_iter()
         .filter(|report| {
-            // Get trend
-            // Test for opposite directions
-            // Test for equalities
-            // Test for tolerances
-            // For each case, return the index to the bad level
-            // Create a new Vec without that bad slice and test again
-            // If still fails, bad report
             let trend = match get_trend(&report) {
                 Some(t) => t,
                 None => {
@@ -86,6 +79,8 @@ fn puzzle2(input: &'static str) -> Result<usize, anyhow::Error> {
                 };
                 if let Validity::Invalid(_v) = check_for_validity(&trend, &error_corrected_report) {
                     // Bad twice, naughty list
+                    dbg!("=======================");
+                    dbg!(&report, &trend, &i, &error_corrected_report);
                     false
                 } else {
                     true
@@ -179,14 +174,14 @@ mod tests {
 
     #[test]
     fn puzzle1() {
-        let data = include_str!("../data/d2p1-test.txt");
+        let data = include_str!("../../data/d2p1-test.txt");
         let result = crate::puzzle1(data);
         assert_eq!(result.unwrap(), 2);
     }
 
     #[test]
     fn puzzle2() {
-        let data = include_str!("../data/d2p2-test.txt");
+        let data = include_str!("../../data/d2p2-test.txt");
         let result = crate::puzzle2(data);
         assert_eq!(result.unwrap(), 4);
     }

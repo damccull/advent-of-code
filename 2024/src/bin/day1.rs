@@ -10,7 +10,7 @@ use nom::{
 };
 
 fn main() -> Result<()> {
-    let data = include_str!("../data/day1.txt");
+    let data = include_str!("../../data/day1.txt");
     let result = crate::puzzle1(data).unwrap();
     println!("Day 1 Puzzle 1: {}", result);
 
@@ -86,7 +86,7 @@ mod tests {
 
     #[test]
     fn puzzle1() -> Result<()> {
-        let data = include_str!("../data/d1p1-test.txt");
+        let data = include_str!("../../data/d1p1-test.txt");
         let result = crate::puzzle1(data);
         assert_eq!(result.unwrap(), 11);
         Ok(())
@@ -94,7 +94,7 @@ mod tests {
 
     #[test]
     fn puzzle2() {
-        let data = include_str!("../data/d1p2-test.txt");
+        let data = include_str!("../../data/d1p2-test.txt");
         let result = crate::puzzle2(data);
         assert_eq!(result.unwrap(), 31);
     }
